@@ -32,9 +32,17 @@ export function ConversationPanel() {
   const searchQuery = useSettingsStore((s) => s.searchQuery)
   const hideSystem = useSettingsStore((s) => s.hideSystem)
   const hideThinking = useSettingsStore((s) => s.hideThinking)
+  const hideToolCalls = useSettingsStore((s) => s.hideToolCalls)
+  const syncSelection = useSettingsStore((s) => s.syncSelection)
   const items = useMemo(
-    () => filterConversationItems(allItems, { searchQuery, hideSystem, hideThinking }),
-    [allItems, searchQuery, hideSystem, hideThinking],
+    () =>
+      filterConversationItems(allItems, {
+        searchQuery,
+        hideSystem,
+        hideThinking,
+        hideToolCalls,
+      }),
+    [allItems, searchQuery, hideSystem, hideThinking, hideToolCalls],
   )
   const selectedItemId = selection?.conversationItemId
 
@@ -78,6 +86,7 @@ export function ConversationPanel() {
 
   useEffect(() => {
     if (
+      !syncSelection ||
       selection?.source !== 'timeline' ||
       !selection.conversationItemId ||
       !parentRef.current
@@ -89,7 +98,7 @@ export function ConversationPanel() {
         row.kind === 'item' && items[row.itemIndex]?.id === selection.conversationItemId,
     )
     if (index >= 0) virtualizer.scrollToIndex(index, { align: 'center' })
-  }, [selection?.source, selection?.conversationItemId, rows, items, virtualizer])
+  }, [syncSelection, selection?.source, selection?.conversationItemId, rows, items, virtualizer])
 
   if (!session) {
     return (

@@ -2,6 +2,14 @@ import { Settings } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useSettingsStore } from '../../store/settingsStore'
 
+function SettingsSection({ title }: { title: string }) {
+  return (
+    <div className="border-b border-zinc-200 px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-zinc-400 dark:border-zinc-800">
+      {title}
+    </div>
+  )
+}
+
 function SettingToggle({
   label,
   description,
@@ -36,8 +44,12 @@ export function SettingsPopover() {
   const rootRef = useRef<HTMLDivElement>(null)
   const hideSystem = useSettingsStore((s) => s.hideSystem)
   const hideThinking = useSettingsStore((s) => s.hideThinking)
+  const hideToolCalls = useSettingsStore((s) => s.hideToolCalls)
   const setHideSystem = useSettingsStore((s) => s.setHideSystem)
   const setHideThinking = useSettingsStore((s) => s.setHideThinking)
+  const setHideToolCalls = useSettingsStore((s) => s.setHideToolCalls)
+  const syncSelection = useSettingsStore((s) => s.syncSelection)
+  const setSyncSelection = useSettingsStore((s) => s.setSyncSelection)
 
   useEffect(() => {
     if (!open) return
@@ -66,9 +78,7 @@ export function SettingsPopover() {
       </button>
       {open && (
         <div className="absolute right-0 top-full z-20 mt-1 w-64 rounded border border-zinc-200 bg-white py-1 shadow-lg dark:border-zinc-700 dark:bg-zinc-950">
-          <div className="border-b border-zinc-200 px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-zinc-400 dark:border-zinc-800">
-            Display
-          </div>
+          <SettingsSection title="Display" />
           <SettingToggle
             label="Hide system / meta"
             description="Remove meta snapshots and system items from timeline and conversation."
@@ -80,6 +90,19 @@ export function SettingsPopover() {
             description="Hide thinking blocks from the conversation panel."
             checked={hideThinking}
             onChange={setHideThinking}
+          />
+          <SettingToggle
+            label="Hide tool calls"
+            description="Hide tool_use and tool_result items from timeline and conversation."
+            checked={hideToolCalls}
+            onChange={setHideToolCalls}
+          />
+          <SettingsSection title="Behavior" />
+          <SettingToggle
+            label="Sync selection"
+            description="Link timeline and conversation selection, scrolling, and highlights."
+            checked={syncSelection}
+            onChange={setSyncSelection}
           />
         </div>
       )}

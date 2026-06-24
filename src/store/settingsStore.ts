@@ -9,6 +9,8 @@ export interface ExplorerSettings {
   timelineCategoryFilter: TimelineCategoryFilter
   hideSystem: boolean
   hideThinking: boolean
+  hideToolCalls: boolean
+  syncSelection: boolean
 }
 
 interface SettingsState extends ExplorerSettings {
@@ -16,6 +18,8 @@ interface SettingsState extends ExplorerSettings {
   setTimelineCategoryFilter: (filter: TimelineCategoryFilter) => void
   setHideSystem: (hide: boolean) => void
   setHideThinking: (hide: boolean) => void
+  setHideToolCalls: (hide: boolean) => void
+  setSyncSelection: (sync: boolean) => void
   resetSessionFilters: () => void
 }
 
@@ -24,6 +28,8 @@ const DEFAULT_SETTINGS: ExplorerSettings = {
   timelineCategoryFilter: 'all',
   hideSystem: false,
   hideThinking: false,
+  hideToolCalls: false,
+  syncSelection: true,
 }
 
 export const useSettingsStore = create<SettingsState>()(
@@ -35,6 +41,8 @@ export const useSettingsStore = create<SettingsState>()(
       setTimelineCategoryFilter: (timelineCategoryFilter) => set({ timelineCategoryFilter }),
       setHideSystem: (hideSystem) => set({ hideSystem }),
       setHideThinking: (hideThinking) => set({ hideThinking }),
+      setHideToolCalls: (hideToolCalls) => set({ hideToolCalls }),
+      setSyncSelection: (syncSelection) => set({ syncSelection }),
       resetSessionFilters: () =>
         set({
           searchQuery: '',
@@ -47,6 +55,8 @@ export const useSettingsStore = create<SettingsState>()(
         timelineCategoryFilter: state.timelineCategoryFilter,
         hideSystem: state.hideSystem,
         hideThinking: state.hideThinking,
+        hideToolCalls: state.hideToolCalls,
+        syncSelection: state.syncSelection,
       }),
     },
   ),

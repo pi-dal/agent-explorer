@@ -47,6 +47,7 @@ describe('filterTimelineEvents', () => {
       searchQuery: 'mkdir',
       timelineCategoryFilter: 'all',
       hideSystem: false,
+      hideToolCalls: false,
     })
     expect(result.map((event) => event.id)).toEqual(['e1'])
   })
@@ -56,6 +57,7 @@ describe('filterTimelineEvents', () => {
       searchQuery: '',
       timelineCategoryFilter: 'tool',
       hideSystem: false,
+      hideToolCalls: false,
     })
     expect(result.map((event) => event.id)).toEqual(['e3'])
   })
@@ -65,8 +67,29 @@ describe('filterTimelineEvents', () => {
       searchQuery: '',
       timelineCategoryFilter: 'all',
       hideSystem: true,
+      hideToolCalls: false,
     })
     expect(result.map((event) => event.id)).toEqual(['e1', 'e3'])
+  })
+
+  it('hides tool events when hideToolCalls is enabled', () => {
+    const toolEvents = [
+      ...events,
+      baseEvent({
+        id: 'e4',
+        lineIndex: 4,
+        category: 'assistant',
+        label: 'tool_use Bash',
+        preview: 'mkdir foo',
+      }),
+    ]
+    const result = filterTimelineEvents(toolEvents, {
+      searchQuery: '',
+      timelineCategoryFilter: 'all',
+      hideSystem: false,
+      hideToolCalls: true,
+    })
+    expect(result.map((event) => event.id)).toEqual(['e1', 'e2'])
   })
 })
 
@@ -75,6 +98,8 @@ describe('filterConversationItems', () => {
     baseItem({ id: 'i1', role: 'user', preview: 'Create folder' }),
     baseItem({ id: 'i2', role: 'thinking', preview: 'planning next step' }),
     baseItem({ id: 'i3', role: 'system', preview: 'system notice' }),
+    baseItem({ id: 'i4', role: 'tool_call', preview: 'Bash: ls' }),
+    baseItem({ id: 'i5', role: 'tool_result', preview: 'done' }),
   ]
 
   it('filters by search query', () => {
@@ -82,6 +107,7 @@ describe('filterConversationItems', () => {
       searchQuery: 'planning',
       hideSystem: false,
       hideThinking: false,
+      hideToolCalls: false,
     })
     expect(result.map((item) => item.id)).toEqual(['i2'])
   })
@@ -91,8 +117,9 @@ describe('filterConversationItems', () => {
       searchQuery: '',
       hideSystem: false,
       hideThinking: true,
+      hideToolCalls: false,
     })
-    expect(result.map((item) => item.id)).toEqual(['i1', 'i3'])
+    expect(result.map((item) => item.id)).toEqual(['i1', 'i3', 'i4', 'i5'])
   })
 
   it('hides system messages when enabled', () => {
@@ -100,7 +127,18 @@ describe('filterConversationItems', () => {
       searchQuery: '',
       hideSystem: true,
       hideThinking: false,
+      hideToolCalls: false,
     })
-    expect(result.map((item) => item.id)).toEqual(['i1', 'i2'])
+    expect(result.map((item) => item.id)).toEqual(['i1', 'i2', 'i4', 'i5'])
+  })
+
+  it('hides tool call items when enabled', () => {
+    const result = filterConversationItems(items, {
+      searchQuery: '',
+      hideSystem: false,
+      hideThinking: false,
+      hideToolCalls: true,
+    })
+    expect(result.map((item) => item.id)).toEqual(['i1', 'i2', 'i3'])
   })
 })

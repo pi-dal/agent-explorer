@@ -53,17 +53,26 @@ function isSystemConversationItem(item: ConversationListItem): boolean {
   return item.role === 'system'
 }
 
+function isToolTimelineEvent(event: TimelineEvent): boolean {
+  return event.category === 'tool' || event.label.startsWith('tool_use')
+}
+
+function isToolConversationItem(item: ConversationListItem): boolean {
+  return item.role === 'tool_call' || item.role === 'tool_result'
+}
+
 export function filterTimelineEvents(
   events: TimelineEvent[],
   settings: Pick<
     ExplorerSettings,
-    'searchQuery' | 'timelineCategoryFilter' | 'hideSystem'
+    'searchQuery' | 'timelineCategoryFilter' | 'hideSystem' | 'hideToolCalls'
   >,
 ): TimelineEvent[] {
   const query = settings.searchQuery.trim()
 
   return events.filter((event) => {
     if (settings.hideSystem && isSystemTimelineEvent(event)) return false
+    if (settings.hideToolCalls && isToolTimelineEvent(event)) return false
     if (
       settings.timelineCategoryFilter !== 'all' &&
       event.category !== settings.timelineCategoryFilter
@@ -77,13 +86,17 @@ export function filterTimelineEvents(
 
 export function filterConversationItems(
   items: ConversationListItem[],
-  settings: Pick<ExplorerSettings, 'searchQuery' | 'hideSystem' | 'hideThinking'>,
+  settings: Pick<
+    ExplorerSettings,
+    'searchQuery' | 'hideSystem' | 'hideThinking' | 'hideToolCalls'
+  >,
 ): ConversationListItem[] {
   const query = settings.searchQuery.trim()
 
   return items.filter((item) => {
     if (settings.hideSystem && isSystemConversationItem(item)) return false
     if (settings.hideThinking && item.role === 'thinking') return false
+    if (settings.hideToolCalls && isToolConversationItem(item)) return false
     if (!matchesSearch(conversationSearchText(item), query)) return false
     return true
   })

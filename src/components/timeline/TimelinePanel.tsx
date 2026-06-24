@@ -16,6 +16,8 @@ export function TimelinePanel() {
   const searchQuery = useSettingsStore((s) => s.searchQuery)
   const timelineCategoryFilter = useSettingsStore((s) => s.timelineCategoryFilter)
   const hideSystem = useSettingsStore((s) => s.hideSystem)
+  const hideToolCalls = useSettingsStore((s) => s.hideToolCalls)
+  const syncSelection = useSettingsStore((s) => s.syncSelection)
   const parentRef = useRef<HTMLDivElement>(null)
 
   const allEvents = session?.events ?? EMPTY_EVENTS
@@ -25,8 +27,9 @@ export function TimelinePanel() {
         searchQuery,
         timelineCategoryFilter,
         hideSystem,
+        hideToolCalls,
       }),
-    [allEvents, searchQuery, timelineCategoryFilter, hideSystem],
+    [allEvents, searchQuery, timelineCategoryFilter, hideSystem, hideToolCalls],
   )
 
   const virtualizer = useVirtualizer({
@@ -39,12 +42,17 @@ export function TimelinePanel() {
   })
 
   useEffect(() => {
-    if (selection?.source !== 'conversation' || !selection.eventId || !parentRef.current) {
+    if (
+      !syncSelection ||
+      selection?.source !== 'conversation' ||
+      !selection.eventId ||
+      !parentRef.current
+    ) {
       return
     }
     const index = events.findIndex((e) => e.id === selection.eventId)
     if (index >= 0) virtualizer.scrollToIndex(index, { align: 'center' })
-  }, [selection?.source, selection?.eventId, events, virtualizer])
+  }, [syncSelection, selection?.source, selection?.eventId, events, virtualizer])
 
   if (!session) {
     return (

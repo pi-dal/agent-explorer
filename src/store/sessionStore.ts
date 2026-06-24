@@ -78,11 +78,12 @@ export const useSessionStore = create<SessionState>()(
       selectTimelineEvent: (eventId) => {
         const event = get().session?.events.find((e) => e.id === eventId)
         if (!event) return
+        const syncSelection = useSettingsStore.getState().syncSelection
         set({
           selection: {
             source: 'timeline',
             eventId,
-            conversationItemId: event.conversationItemId,
+            conversationItemId: syncSelection ? event.conversationItemId : undefined,
             lineIndex: event.lineIndex,
             raw: event.raw,
           },
@@ -92,13 +93,16 @@ export const useSessionStore = create<SessionState>()(
       selectConversationItem: (itemId) => {
         const item = get().session?.conversationItems.find((i) => i.id === itemId)
         if (!item) return
+        const syncSelection = useSettingsStore.getState().syncSelection
+        const linkedEventId = item.linkedEventIds[0]
         set({
           selection: {
             source: 'conversation',
             conversationItemId: itemId,
-            eventId: item.linkedEventIds[0],
-            lineIndex: get().session?.events.find((e) => e.id === item.linkedEventIds[0])
-              ?.lineIndex,
+            eventId: syncSelection ? linkedEventId : undefined,
+            lineIndex: syncSelection
+              ? get().session?.events.find((e) => e.id === linkedEventId)?.lineIndex
+              : undefined,
             raw: item.raw,
           },
         })
