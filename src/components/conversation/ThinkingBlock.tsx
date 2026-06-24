@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { ConversationListItem } from '../../core/types'
 import { ChevronToggle } from '../shared/ChevronToggle'
+import { ExpandablePre } from '../shared/ExpandablePre'
 import { useRowResize } from './useRowResize'
 
 interface ThinkingBlockProps {
@@ -56,9 +57,11 @@ export function ThinkingBlock({
           )}
         </button>
         {expanded && (
-          <p className="mt-2 whitespace-pre-wrap pl-5 text-sm italic leading-relaxed text-zinc-400 dark:text-zinc-500">
-            {text}
-          </p>
+          <ExpandablePre
+            text={text}
+            mono={false}
+            className="mt-2 pl-5 text-sm italic text-zinc-400 dark:text-zinc-500"
+          />
         )}
       </div>
     </div>

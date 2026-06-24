@@ -2,6 +2,7 @@ import { CircleCheck, CircleX } from 'lucide-react'
 import { useState } from 'react'
 import type { ConversationListItem } from '../../core/types'
 import { ChevronToggle } from '../shared/ChevronToggle'
+import { ExpandablePre } from '../shared/ExpandablePre'
 import { shortToolId } from './toolCardUtils'
 import { toolCardBorderClass } from './toolCardStyles'
 import { useRowResize } from './useRowResize'
@@ -84,9 +85,10 @@ export function ToolResultCard({
           )}
         </button>
         {expanded && (
-          <pre className="max-h-72 overflow-auto border-t border-zinc-200 px-3 py-2 font-mono text-xs leading-relaxed text-zinc-600 dark:border-zinc-700 dark:text-zinc-400">
-            {text || '(empty)'}
-          </pre>
+          <ExpandablePre
+            text={text}
+            className="border-t border-zinc-200 dark:border-zinc-700"
+          />
         )}
       </div>
     </div>

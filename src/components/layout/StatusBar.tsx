@@ -1,6 +1,7 @@
 import { Moon, Sun } from 'lucide-react'
 import { useRef, type ChangeEvent } from 'react'
 import { useSessionStore } from '../../store/sessionStore'
+import { ParseWarningsBadge } from './ParseWarningsBadge'
 
 export function StatusBar() {
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -75,6 +76,10 @@ export function StatusBar() {
 
       {session && (
         <span className="truncate text-xs text-zinc-500">{session.fileName}</span>
+      )}
+
+      {session && session.parseWarnings.length > 0 && (
+        <ParseWarningsBadge warnings={session.parseWarnings} />
       )}
 
       {error && <span className="truncate text-xs text-red-500">{error}</span>}

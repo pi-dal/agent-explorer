@@ -1,4 +1,8 @@
 import type { SessionAdapter } from './types'
+import {
+  truncateBlockText,
+  truncatePreview,
+} from '../core/text'
 import type {
   ContentBlock,
   ConversationListItem,
@@ -8,14 +12,6 @@ import type {
   ParsedLine,
   TimelineEvent,
 } from '../core/types'
-
-const PREVIEW_LIMIT = 120
-
-function truncate(text: string, limit = PREVIEW_LIMIT): string {
-  const normalized = text.replace(/\s+/g, ' ').trim()
-  if (normalized.length <= limit) return normalized
-  return `${normalized.slice(0, limit)}…`
-}
 
 function parseTimestamp(value: unknown): number | undefined {
   if (typeof value === 'string') {
@@ -70,14 +66,14 @@ function extractContentBlocks(record: Record<string, unknown>): ContentBlock[] {
   for (const part of record.message.content) {
     if (!isRecord(part)) continue
     if (part.type === 'text' && typeof part.text === 'string') {
-      blocks.push({ type: 'text', text: part.text })
+      blocks.push({ type: 'text', text: truncateBlockText(part.text) })
     } else if (part.type === 'thinking' && typeof part.thinking === 'string') {
-      blocks.push({ type: 'thinking', text: part.thinking })
+      blocks.push({ type: 'thinking', text: truncateBlockText(part.thinking) })
     } else if (part.type === 'tool_use' && typeof part.name === 'string') {
       const input = isRecord(part.input) ? part.input : {}
       blocks.push({
         type: 'tool_use',
-        text: JSON.stringify(input, null, 2),
+        text: truncateBlockText(JSON.stringify(input, null, 2)),
         toolName: part.name,
         toolInput: input,
       })
@@ -100,9 +96,9 @@ function blockLabel(block: ContentBlock): string {
 
 function blockPreview(block: ContentBlock): string {
   if (block.type === 'tool_use') {
-    return truncate(`${block.toolName}: ${block.text}`)
+    return truncatePreview(`${block.toolName}: ${block.text}`)
   }
-  return truncate(block.text)
+  return truncatePreview(block.text)
 }
 
 function timelineCategory(
@@ -139,7 +135,7 @@ function timelineLabel(type: string, record: Record<string, unknown>): string {
 }
 
 function timelinePreview(type: string, record: Record<string, unknown>): string {
-  if (type === 'user') return truncate(extractUserText(record))
+  if (type === 'user') return truncatePreview(extractUserText(record))
   if (type === 'assistant') {
     const blocks = extractContentBlocks(record)
     if (blocks.length > 0) return blockPreview(blocks[0]!)
@@ -214,7 +210,8 @@ export const claudeTranscriptAdapter: SessionAdapter = {
             id: itemId,
             turnIndex,
             role: 'tool_result',
-            preview: truncate(text || '(empty tool result)'),
+            preview: truncatePreview(text || '(empty tool result)'),
+            blocks: text ? [{ type: 'text', text: truncateBlockText(text) }] : [],
             toolCallId,
             status: isError ? 'failed' : 'completed',
             linkedEventIds: [eventId],
@@ -228,8 +225,8 @@ export const claudeTranscriptAdapter: SessionAdapter = {
             id: itemId,
             turnIndex,
             role: 'user',
-            preview: truncate(text),
-            blocks: text ? [{ type: 'text', text }] : [],
+            preview: truncatePreview(text),
+            blocks: text ? [{ type: 'text', text: truncateBlockText(text) }] : [],
             linkedEventIds: [eventId],
             raw: record,
           })
