@@ -5,14 +5,122 @@
 @theme {
   --font-sans: system-ui, 'Segoe UI', Roboto, sans-serif;
   --font-mono: ui-monospace, Consolas, monospace;
+
+  /* Surfaces & chrome */
+  --color-background: var(--ui-background);
+  --color-foreground: var(--ui-foreground);
+  --color-muted-foreground: var(--ui-muted-foreground);
+  --color-faint: var(--ui-faint);
+  --color-border: var(--ui-border);
+  --color-border-subtle: var(--ui-border-subtle);
+  --color-surface: var(--ui-surface);
+  --color-surface-muted: var(--ui-surface-muted);
+  --color-surface-elevated: var(--ui-surface-elevated);
+  --color-surface-overlay: var(--ui-surface-overlay);
+  --color-hover: var(--ui-hover);
+  --color-chrome: var(--ui-chrome);
+  --color-chrome-foreground: var(--ui-chrome-foreground);
+  --color-chrome-muted: var(--ui-chrome-muted);
+  --color-divider: var(--ui-divider);
+
+  /* Accent */
+  --color-accent: var(--color-neutral-900);
+  --color-accent-hover: var(--color-neutral-700);
+  --color-accent-foreground: #ffffff;
+  --color-accent-border: var(--color-blue-400);
+  --color-accent-subtle: var(--ui-accent-subtle);
+
+  /* Timeline role dots */
+  --color-role-user: var(--color-accent);
+  --color-role-assistant: var(--color-orange-500);
+  --color-role-thinking: var(--color-amber-500);
+  --color-role-tool: var(--color-emerald-500);
+  --color-role-system: var(--color-zinc-400);
+  --color-role-meta: var(--color-zinc-300);
+
+  /* Status & feedback */
+  --color-danger: var(--color-red-500);
+  --color-danger-border: var(--ui-danger-border);
+  --color-success: var(--ui-success);
+  --color-warning: var(--ui-warning);
+  --color-warning-foreground: var(--ui-warning-foreground);
+  --color-warning-muted: var(--ui-warning-muted);
+  --color-warning-border: var(--ui-warning-border);
+  --color-warning-hover: var(--ui-warning-hover);
+
+  /* JSON syntax */
+  --color-syntax-key: var(--ui-syntax-key);
+  --color-syntax-number: var(--ui-syntax-number);
+  --color-syntax-string: var(--ui-syntax-string);
 }
 
 :root {
   color-scheme: light;
+
+  --ui-background: var(--color-zinc-50);
+  --ui-foreground: var(--color-zinc-900);
+  --ui-muted-foreground: var(--color-zinc-500);
+  --ui-faint: var(--color-zinc-400);
+  --ui-border: var(--color-zinc-200);
+  --ui-border-subtle: var(--color-zinc-300);
+  --ui-surface: #ffffff;
+  --ui-surface-muted: var(--color-zinc-50);
+  --ui-surface-elevated: var(--color-zinc-100);
+  --ui-surface-overlay: rgb(255 255 255 / 0.9);
+  --ui-hover: var(--color-zinc-100);
+  --ui-chrome: var(--color-zinc-900);
+  --ui-chrome-foreground: #ffffff;
+  --ui-chrome-muted: var(--color-zinc-100);
+  --ui-divider: var(--color-zinc-200);
+  --ui-accent-subtle: color-mix(in oklab, var(--color-neutral-900) 10%, transparent);
+  --ui-danger-border: var(--color-red-200);
+  --ui-success: var(--color-emerald-600);
+  --ui-warning: var(--color-amber-600);
+  --ui-warning-foreground: var(--color-amber-800);
+  --ui-warning-muted: var(--color-amber-100);
+  --ui-warning-border: var(--color-amber-200);
+  --ui-warning-hover: var(--color-amber-200);
+  --ui-syntax-key: var(--color-blue-600);
+  --ui-syntax-number: var(--color-amber-600);
+  --ui-syntax-string: var(--color-emerald-700);
 }
 
 :root.dark {
   color-scheme: dark;
+
+  --ui-background: var(--color-zinc-950);
+  --ui-foreground: var(--color-zinc-100);
+  --ui-muted-foreground: var(--color-zinc-400);
+  --ui-faint: var(--color-zinc-500);
+  --ui-border: var(--color-zinc-800);
+  --ui-border-subtle: var(--color-zinc-700);
+  --ui-surface: var(--color-zinc-950);
+  --ui-surface-muted: rgb(24 24 27 / 0.5);
+  --ui-surface-elevated: var(--color-zinc-900);
+  --ui-surface-overlay: rgb(9 9 11 / 0.9);
+  --ui-hover: var(--color-zinc-900);
+  --ui-chrome: var(--color-zinc-100);
+  --ui-chrome-foreground: var(--color-zinc-900);
+  --ui-chrome-muted: var(--color-zinc-800);
+  --ui-divider: var(--color-zinc-800);
+  --ui-accent-subtle: color-mix(in oklab, var(--color-neutral-600) 20%, transparent);
+  --ui-danger-border: rgb(127 29 29 / 0.6);
+  --ui-success: var(--color-emerald-400);
+  --ui-warning: var(--color-amber-400);
+  --ui-warning-foreground: var(--color-amber-200);
+  --ui-warning-muted: rgb(69 26 3 / 0.5);
+  --ui-warning-border: rgb(120 53 15 / 0.6);
+  --ui-warning-hover: var(--color-amber-950);
+  --ui-syntax-key: var(--color-blue-400);
+  --ui-syntax-number: var(--color-amber-400);
+  --ui-syntax-string: var(--color-emerald-400);
+
+  --color-accent: var(--color-neutral-100);
+  --color-accent-hover: var(--color-neutral-300);
+  --color-accent-foreground: #000000;
+
+  --color-role-system: var(--color-zinc-500);
+  --color-role-meta: var(--color-zinc-600);
 }
 
 html,
@@ -25,7 +133,7 @@ body,
 
 body {
   font-family: var(--font-sans);
-  @apply bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100;
+  @apply bg-background text-foreground;
 }
 
 * {
@@ -86,16 +194,12 @@ body {
   left: 50%;
   width: 1px;
   transform: translateX(-50%);
-  background-color: rgb(228 228 231);
-  transition: background-color 150ms, width 150ms;
-}
-
-:root.dark .split-handle::after {
-  background-color: rgb(39 39 42);
+  background-color: var(--ui-divider);
+  transition: width 150ms;
 }
 
 .split-handle:hover::after,
 .split-handle-active::after {
   width: 3px;
-  background-color: rgb(14 165 233);
+  background-color: var(--color-accent-border);
 }

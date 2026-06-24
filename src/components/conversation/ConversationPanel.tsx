@@ -1,5 +1,12 @@
 import { useRef, useEffect, useMemo, useCallback, useState } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
+import {
+  emptyState,
+  panelHeader,
+  panelHeaderSticky,
+  textFaint,
+  turnDividerLine,
+} from '../../styles/uiClasses'
 import { filterConversationItems } from '../../core/filter'
 import { useSessionStore } from '../../store/sessionStore'
 import { useSettingsStore } from '../../store/settingsStore'
@@ -102,7 +109,7 @@ export function ConversationPanel() {
 
   if (!session) {
     return (
-      <div className="flex h-full items-center justify-center p-4 text-sm text-zinc-500">
+      <div className={`flex h-full items-center justify-center p-4 ${emptyState}`}>
         Open a Claude Code JSONL file to explore the session
       </div>
     )
@@ -110,7 +117,7 @@ export function ConversationPanel() {
 
   if (allItems.length === 0) {
     return (
-      <div className="flex h-full items-center justify-center p-4 text-sm text-zinc-500">
+      <div className={`flex h-full items-center justify-center p-4 ${emptyState}`}>
         No conversation items in this file
       </div>
     )
@@ -119,10 +126,10 @@ export function ConversationPanel() {
   if (items.length === 0) {
     return (
       <div className="flex h-full flex-col">
-        <div className="border-b border-zinc-200 px-4 py-2 text-xs font-medium text-zinc-500 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/80">
+        <div className={`px-4 py-2 ${panelHeaderSticky}`}>
           Conversation · 0 / {allItems.length} messages
         </div>
-        <div className="flex flex-1 items-center justify-center p-4 text-sm text-zinc-500">
+        <div className={`flex flex-1 items-center justify-center p-4 ${emptyState}`}>
           No messages match the current filters
         </div>
       </div>
@@ -131,7 +138,7 @@ export function ConversationPanel() {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="border-b border-zinc-200 px-4 py-2 text-xs font-medium text-zinc-500 backdrop-blur dark:border-zinc-800">
+      <div className={`px-4 py-2 ${panelHeader}`}>
         Conversation · {items.length}
         {items.length !== allItems.length ? ` / ${allItems.length}` : ''} messages ·{' '}
         {session.meta.turnCount} turns
@@ -157,11 +164,11 @@ export function ConversationPanel() {
               >
                 {row.kind === 'turn' ? (
                   <div className="flex items-center gap-3 px-4 py-3">
-                    <div className="h-px flex-1 bg-zinc-200 dark:bg-zinc-800" />
-                    <span className="text-[10px] font-semibold uppercase tracking-widest text-zinc-400">
+                    <div className={`h-px flex-1 ${turnDividerLine}`} />
+                    <span className={`text-[10px] font-semibold uppercase tracking-widest ${textFaint}`}>
                       Turn {row.turnIndex}
                     </span>
-                    <div className="h-px flex-1 bg-zinc-200 dark:bg-zinc-800" />
+                    <div className={`h-px flex-1 ${turnDividerLine}`} />
                   </div>
                 ) : (
                   <ConversationMessage

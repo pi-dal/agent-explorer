@@ -1,5 +1,11 @@
 import { AlertTriangle } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
+import {
+  dropdownPanel,
+  warningBadge,
+  warningPanel,
+  warningPanelItem,
+} from '../../styles/uiClasses'
 import type { ParseWarning } from '../../core/types'
 
 interface ParseWarningsBadgeProps {
@@ -30,7 +36,7 @@ export function ParseWarningsBadge({ warnings }: ParseWarningsBadgeProps) {
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
-        className="inline-flex items-center gap-1 rounded bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-800 hover:bg-amber-200 dark:bg-amber-950/50 dark:text-amber-300 dark:hover:bg-amber-950"
+        className={`inline-flex items-center gap-1 rounded px-2 py-0.5 text-[10px] font-medium ${warningBadge}`}
         aria-expanded={open}
         aria-haspopup="listbox"
       >
@@ -38,14 +44,16 @@ export function ParseWarningsBadge({ warnings }: ParseWarningsBadgeProps) {
         {warnings.length} warning{warnings.length === 1 ? '' : 's'}
       </button>
       {open && (
-        <div className="absolute left-0 top-full z-20 mt-1 max-h-48 w-72 overflow-auto rounded border border-amber-200 bg-white py-1 shadow-lg dark:border-amber-900/60 dark:bg-zinc-950">
-          <ul className="text-xs text-amber-900 dark:text-amber-200">
+        <div
+          className={`absolute left-0 top-full z-20 mt-1 max-h-48 w-72 overflow-auto ${dropdownPanel} ${warningPanel}`}
+        >
+          <ul className="text-xs">
             {warnings.map((warning) => (
               <li
                 key={`${warning.lineIndex}-${warning.message}`}
-                className="border-b border-amber-100 px-3 py-1.5 last:border-b-0 dark:border-amber-900/40"
+                className={`border-b px-3 py-1.5 last:border-b-0 ${warningPanelItem}`}
               >
-                <span className="font-mono text-amber-700 dark:text-amber-400">
+                <span className="font-mono text-warning">
                   Line {warning.lineIndex}:
                 </span>{' '}
                 {warning.message}

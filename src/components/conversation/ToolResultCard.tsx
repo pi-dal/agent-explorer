@@ -1,5 +1,11 @@
 import { CircleCheck, CircleX } from 'lucide-react'
 import { useState } from 'react'
+import {
+  surfaceCard,
+  textFaint,
+  textMonoMuted,
+  textMuted,
+} from '../../styles/uiClasses'
 import type { ConversationListItem } from '../../core/types'
 import { ChevronToggle } from '../shared/ChevronToggle'
 import { ExpandablePre } from '../shared/ExpandablePre'
@@ -44,7 +50,7 @@ export function ToolResultCard({
       onMouseLeave={onHoverEnd}
     >
       <div
-        className={`rounded-lg border bg-zinc-50 transition-colors dark:bg-zinc-900/50 ${
+        className={`${surfaceCard} ${
           expanded ? 'max-w-2xl' : 'inline-flex w-fit max-w-full'
         } ${toolCardBorderClass({ selected, pairHighlighted, isFailed })}`}
         onClick={onSelect}
@@ -59,37 +65,26 @@ export function ToolResultCard({
             expanded ? 'w-full px-3 py-2' : 'px-2.5 py-1.5'
           }`}
         >
-          <ChevronToggle expanded={expanded} className="text-zinc-400" />
+          <ChevronToggle expanded={expanded} className={textFaint} />
           {isFailed ? (
             <CircleX
-              className="shrink-0 text-red-500 dark:text-red-400"
+              className="shrink-0 text-danger"
               size={14}
               strokeWidth={1.75}
               aria-hidden
             />
           ) : (
             <CircleCheck
-              className="shrink-0 text-emerald-600 dark:text-emerald-400"
+              className="shrink-0 text-success"
               size={14}
               strokeWidth={1.75}
               aria-hidden
             />
           )}
-          <span className="text-sm font-medium text-zinc-600 dark:text-zinc-300">
-            Result
-          </span>
-          {shortId && (
-            <span className="font-mono text-[10px] text-zinc-400 dark:text-zinc-500">
-              {shortId}
-            </span>
-          )}
+          <span className={`text-sm font-medium ${textMuted}`}>Result</span>
+          {shortId && <span className={`text-[10px] ${textMonoMuted}`}>{shortId}</span>}
         </button>
-        {expanded && (
-          <ExpandablePre
-            text={text}
-            className="border-t border-zinc-200 dark:border-zinc-700"
-          />
-        )}
+        {expanded && <ExpandablePre text={text} className="border-t border-border" />}
       </div>
     </div>
   )

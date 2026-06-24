@@ -1,5 +1,12 @@
 import { Wrench } from 'lucide-react'
 import { useState } from 'react'
+import {
+  surfaceCard,
+  textFaint,
+  textMono,
+  textMonoMuted,
+  textMuted,
+} from '../../styles/uiClasses'
 import type { ConversationListItem } from '../../core/types'
 import { ChevronToggle } from '../shared/ChevronToggle'
 import { ExpandablePre } from '../shared/ExpandablePre'
@@ -45,7 +52,7 @@ export function ToolCallCard({
       onMouseLeave={onHoverEnd}
     >
       <div
-        className={`rounded-lg border bg-zinc-50 transition-colors dark:bg-zinc-900/50 ${
+        className={`${surfaceCard} ${
           expanded ? 'max-w-2xl' : 'inline-flex w-fit max-w-full'
         } ${toolCardBorderClass({ selected, pairHighlighted })}`}
         onClick={onSelect}
@@ -60,28 +67,17 @@ export function ToolCallCard({
             expanded ? 'w-full px-3 py-2' : 'px-2.5 py-1.5'
           }`}
         >
-          <ChevronToggle expanded={expanded} className="text-zinc-400" />
+          <ChevronToggle expanded={expanded} className={textFaint} />
           <Wrench
-            className="shrink-0 text-zinc-500 dark:text-zinc-400"
+            className={`shrink-0 ${textMuted}`}
             size={14}
             strokeWidth={1.75}
             aria-hidden
           />
-          <span className="font-mono text-sm font-medium text-zinc-800 dark:text-zinc-200">
-            {toolName}
-          </span>
-          {shortId && (
-            <span className="font-mono text-[10px] text-zinc-400 dark:text-zinc-500">
-              {shortId}
-            </span>
-          )}
+          <span className={`text-sm font-medium ${textMono}`}>{toolName}</span>
+          {shortId && <span className={`text-[10px] ${textMonoMuted}`}>{shortId}</span>}
         </button>
-        {expanded && (
-          <ExpandablePre
-            text={inputText}
-            className="border-t border-zinc-200 dark:border-zinc-700"
-          />
-        )}
+        {expanded && <ExpandablePre text={inputText} className="border-t border-border" />}
       </div>
     </div>
   )

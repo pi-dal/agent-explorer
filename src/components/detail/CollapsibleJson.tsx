@@ -1,5 +1,10 @@
 import { Check, Copy } from 'lucide-react'
 import { useState } from 'react'
+import {
+  overlayIconButton,
+  textExpandButton,
+  textMuted,
+} from '../../styles/uiClasses'
 import { ChevronToggle } from '../shared/ChevronToggle'
 
 const STRING_LIMIT = 200
@@ -24,13 +29,16 @@ function JsonNode({
   const [expanded, setExpanded] = useState(defaultExpanded ?? depth < 2)
   const [stringExpanded, setStringExpanded] = useState(false)
 
-  const prefix = name !== undefined ? <span className="text-blue-600 dark:text-blue-400">{name}: </span> : null
+  const prefix =
+    name !== undefined ? (
+      <span className="text-syntax-key">{name}: </span>
+    ) : null
 
   if (value === null) {
     return (
       <div style={depth > 1 ? { paddingLeft: LEVEL_INDENT } : undefined} className="font-mono text-xs leading-5">
         {prefix}
-        <span className="text-zinc-500">null</span>
+        <span className={textMuted}>null</span>
       </div>
     )
   }
@@ -39,7 +47,7 @@ function JsonNode({
     return (
       <div style={depth > 1 ? { paddingLeft: LEVEL_INDENT } : undefined} className="font-mono text-xs leading-5">
         {prefix}
-        <span className="text-amber-600 dark:text-amber-400">{String(value)}</span>
+        <span className="text-syntax-number">{String(value)}</span>
       </div>
     )
   }
@@ -50,12 +58,12 @@ function JsonNode({
     return (
       <div style={depth > 1 ? { paddingLeft: LEVEL_INDENT } : undefined} className="font-mono text-xs leading-5">
         {prefix}
-        <span className="text-emerald-700 dark:text-emerald-400 break-all">"{display}"</span>
+        <span className="break-all text-syntax-string">"{display}"</span>
         {value.length > STRING_LIMIT && (
           <button
             type="button"
             onClick={() => setStringExpanded((v) => !v)}
-            className="ml-2 text-[10px] text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
+            className={`ml-2 text-[10px] ${textExpandButton}`}
           >
             {stringExpanded ? 'collapse' : 'expand'}
           </button>
@@ -69,7 +77,7 @@ function JsonNode({
       return (
         <div style={depth > 1 ? { paddingLeft: LEVEL_INDENT } : undefined} className="font-mono text-xs leading-5">
           {prefix}
-          <span className="text-zinc-500">[]</span>
+          <span className={textMuted}>[]</span>
         </div>
       )
     }
@@ -78,11 +86,11 @@ function JsonNode({
         <button
           type="button"
           onClick={() => setExpanded((v) => !v)}
-          className="inline-flex items-center gap-1 text-left hover:text-zinc-950 dark:hover:text-white"
+          className={`inline-flex items-center gap-1 text-left ${textExpandButton}`}
         >
           {prefix}
-          <ChevronToggle expanded={expanded} className="text-zinc-500" />
-          <span className="text-zinc-500">Array[{value.length}]</span>
+          <ChevronToggle expanded={expanded} className={textMuted} />
+          <span className={textMuted}>Array[{value.length}]</span>
         </button>
         {expanded &&
           value.map((item, index) => (
@@ -104,7 +112,7 @@ function JsonNode({
       return (
         <div style={depth > 1 ? { paddingLeft: LEVEL_INDENT } : undefined} className="font-mono text-xs leading-5">
           {prefix}
-          <span className="text-zinc-500">{'{}'}</span>
+          <span className={textMuted}>{'{}'}</span>
         </div>
       )
     }
@@ -114,11 +122,11 @@ function JsonNode({
           <button
             type="button"
             onClick={() => setExpanded((v) => !v)}
-            className="inline-flex items-center gap-1 text-left hover:text-zinc-950 dark:hover:text-white"
+            className={`inline-flex items-center gap-1 text-left ${textExpandButton}`}
           >
             {prefix}
-            <ChevronToggle expanded={expanded} className="text-zinc-500" />
-            <span className="text-zinc-500">Object({entries.length})</span>
+            <ChevronToggle expanded={expanded} className={textMuted} />
+            <span className={textMuted}>Object({entries.length})</span>
           </button>
         )}
         {(depth === 0 || expanded) &&
@@ -152,7 +160,7 @@ export function CollapsibleJson({ value, defaultExpanded }: CollapsibleJsonProps
       <button
         type="button"
         onClick={handleCopy}
-        className="absolute right-0 top-0 z-10 inline-flex h-7 w-7 items-center justify-center rounded border border-zinc-200 bg-white/90 text-zinc-600 opacity-0 backdrop-blur-sm transition-opacity hover:bg-zinc-50 focus-visible:opacity-100 group-hover:opacity-100 dark:border-zinc-700 dark:bg-zinc-950/90 dark:text-zinc-300 dark:hover:bg-zinc-900"
+        className={`absolute right-0 top-0 z-10 inline-flex h-7 w-7 items-center justify-center rounded opacity-0 transition-opacity focus-visible:opacity-100 group-hover:opacity-100 ${overlayIconButton}`}
         aria-label={copied ? 'Copied' : 'Copy JSON'}
         title={copied ? 'Copied' : 'Copy JSON'}
       >

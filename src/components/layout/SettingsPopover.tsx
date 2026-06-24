@@ -1,10 +1,19 @@
 import { Settings } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
+import {
+  dropdownPanel,
+  hoverRow,
+  iconButton,
+  sectionDivider,
+  textBody,
+  textFaint,
+  textMuted,
+} from '../../styles/uiClasses'
 import { useSettingsStore } from '../../store/settingsStore'
 
 function SettingsSection({ title }: { title: string }) {
   return (
-    <div className="border-b border-zinc-200 px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-zinc-400 dark:border-zinc-800">
+    <div className={`px-3 py-2 text-[10px] font-semibold uppercase tracking-wider ${sectionDivider} ${textFaint}`}>
       {title}
     </div>
   )
@@ -22,7 +31,7 @@ function SettingToggle({
   onChange: (checked: boolean) => void
 }) {
   return (
-    <label className="flex cursor-pointer items-start gap-2 px-3 py-2 hover:bg-zinc-50 dark:hover:bg-zinc-900">
+    <label className={`flex cursor-pointer items-start gap-2 px-3 py-2 ${hoverRow}`}>
       <input
         type="checkbox"
         checked={checked}
@@ -30,10 +39,8 @@ function SettingToggle({
         className="mt-0.5"
       />
       <span>
-        <span className="block text-xs font-medium text-zinc-800 dark:text-zinc-200">
-          {label}
-        </span>
-        <span className="block text-[10px] text-zinc-500">{description}</span>
+        <span className={`block text-xs font-medium ${textBody}`}>{label}</span>
+        <span className={`block text-[10px] ${textMuted}`}>{description}</span>
       </span>
     </label>
   )
@@ -69,7 +76,7 @@ export function SettingsPopover() {
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
-        className="inline-flex h-7 w-7 items-center justify-center rounded border border-zinc-200 text-zinc-600 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
+        className={`inline-flex h-7 w-7 items-center justify-center rounded ${iconButton}`}
         aria-label="Settings"
         aria-expanded={open}
         title="Settings"
@@ -77,7 +84,7 @@ export function SettingsPopover() {
         <Settings size={14} strokeWidth={1.75} aria-hidden />
       </button>
       {open && (
-        <div className="absolute right-0 top-full z-20 mt-1 w-64 rounded border border-zinc-200 bg-white py-1 shadow-lg dark:border-zinc-700 dark:bg-zinc-950">
+        <div className={`absolute right-0 top-full z-20 mt-1 w-64 ${dropdownPanel}`}>
           <SettingsSection title="Display" />
           <SettingToggle
             label="Hide system / meta"

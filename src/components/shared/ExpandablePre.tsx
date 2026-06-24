@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { textExpandButton, textMuted } from '../../styles/uiClasses'
 import {
   DETAIL_TEXT_LIMIT,
   isDetailTruncated,
@@ -27,7 +28,7 @@ export function ExpandablePre({
   return (
     <div>
       <pre
-        className={`max-h-72 overflow-auto whitespace-pre-wrap px-3 py-2 text-xs leading-relaxed text-zinc-600 dark:text-zinc-400 ${mono ? 'font-mono' : 'font-sans'} ${className}`}
+        className={`max-h-72 overflow-auto whitespace-pre-wrap px-3 py-2 text-xs leading-relaxed ${textMuted} ${mono ? 'font-mono' : 'font-sans'} ${className}`}
       >
         {displayText}
       </pre>
@@ -38,7 +39,7 @@ export function ExpandablePre({
             event.stopPropagation()
             setExpanded((value) => !value)
           }}
-          className="px-3 pb-2 text-[10px] text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
+          className={`px-3 pb-2 text-[10px] ${textExpandButton}`}
         >
           {expanded ? 'Show less' : 'Show more'}
         </button>

@@ -1,3 +1,8 @@
+import {
+  accentPairHighlight,
+  accentSelectedRing,
+} from '../../styles/uiClasses'
+
 export function toolCardBorderClass({
   selected,
   pairHighlighted,
@@ -8,13 +13,13 @@ export function toolCardBorderClass({
   isFailed?: boolean
 }): string {
   if (selected) {
-    return 'border-blue-400 ring-1 ring-blue-400/40'
+    return accentSelectedRing
   }
   if (pairHighlighted) {
-    return 'border-violet-400 bg-violet-50/80 ring-1 ring-violet-400/35 dark:border-violet-500 dark:bg-violet-950/30 dark:ring-violet-500/30'
+    return accentPairHighlight
   }
   if (isFailed) {
-    return 'border-red-200 dark:border-red-900/60'
+    return 'border-danger-border'
   }
-  return 'border-zinc-200 dark:border-zinc-700'
+  return 'border-border'
 }

@@ -1,5 +1,6 @@
 import { useRef, useEffect, useMemo } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
+import { emptyState, emptyStateXs, panelHeader } from '../../styles/uiClasses'
 import { filterTimelineEvents } from '../../core/filter'
 import type { TimelineEvent } from '../../core/types'
 import { useSessionStore } from '../../store/sessionStore'
@@ -56,7 +57,7 @@ export function TimelinePanel() {
 
   if (!session) {
     return (
-      <div className="flex h-full items-center justify-center p-4 text-sm text-zinc-500">
+      <div className={`flex h-full items-center justify-center p-4 ${emptyState}`}>
         No session loaded
       </div>
     )
@@ -64,14 +65,14 @@ export function TimelinePanel() {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="border-b border-zinc-200 px-3 py-2 text-xs font-medium text-zinc-500 dark:border-zinc-800">
+      <div className={`px-3 py-2 ${panelHeader}`}>
         Timeline · {events.length}
         {events.length !== allEvents.length ? ` / ${allEvents.length}` : ''} events
       </div>
       <TimelineCategoryFilter />
       <div ref={parentRef} className="flex-1 overflow-auto">
         {events.length === 0 ? (
-          <div className="flex h-full items-center justify-center p-4 text-xs text-zinc-500">
+          <div className={`flex h-full items-center justify-center p-4 ${emptyStateXs}`}>
             No events match the current filters
           </div>
         ) : (

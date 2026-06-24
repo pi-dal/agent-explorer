@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { accentSelectedRing, textFaint } from '../../styles/uiClasses'
 import type { ConversationListItem } from '../../core/types'
 import { ChevronToggle } from '../shared/ChevronToggle'
 import { ExpandablePre } from '../shared/ExpandablePre'
@@ -29,11 +30,11 @@ export function ThinkingBlock({
   return (
     <div className="px-4 py-2" onClick={onSelect}>
       <div
-        className={`max-w-3xl rounded-lg transition-colors ${
+        className={`max-w-3xl rounded-lg ${
           expanded ? 'w-full' : 'inline-flex w-fit max-w-full'
         } ${
           selected
-            ? 'border border-blue-400 px-2.5 py-1.5 ring-1 ring-blue-400/40'
+            ? `border px-2.5 py-1.5 ${accentSelectedRing}`
             : 'border border-transparent px-2.5 py-1.5'
         }`}
       >
@@ -45,13 +46,10 @@ export function ThinkingBlock({
           }}
           className="flex w-full items-center gap-2 text-left"
         >
-          <ChevronToggle
-            expanded={expanded}
-            className="text-zinc-400 dark:text-zinc-500"
-          />
-          <span className="text-xs font-medium text-zinc-400 dark:text-zinc-500">Thinking</span>
+          <ChevronToggle expanded={expanded} className={textFaint} />
+          <span className={`text-xs font-medium ${textFaint}`}>Thinking</span>
           {!expanded && (
-            <span className="min-w-0 flex-1 truncate text-xs italic text-zinc-400 dark:text-zinc-500">
+            <span className={`min-w-0 flex-1 truncate text-xs italic ${textFaint}`}>
               {item.preview}
             </span>
           )}
@@ -60,7 +58,7 @@ export function ThinkingBlock({
           <ExpandablePre
             text={text}
             mono={false}
-            className="mt-2 pl-5 text-sm italic text-zinc-400 dark:text-zinc-500"
+            className={`mt-2 pl-5 text-sm italic ${textFaint}`}
           />
         )}
       </div>

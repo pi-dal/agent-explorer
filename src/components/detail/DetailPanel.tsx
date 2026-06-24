@@ -1,4 +1,10 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
+import {
+  accentTabActive,
+  accentTabInactive,
+  emptyState,
+  sectionDivider,
+} from '../../styles/uiClasses'
 import { useSessionStore } from '../../store/sessionStore'
 import { CollapsibleJson } from './CollapsibleJson'
 import { EventSummary } from './EventSummary'
@@ -24,7 +30,7 @@ export function DetailPanel() {
 
   if (!session) {
     return (
-      <div className="flex h-full items-center justify-center p-4 text-sm text-zinc-500">
+      <div className={`flex h-full items-center justify-center p-4 ${emptyState}`}>
         No session loaded
       </div>
     )
@@ -32,7 +38,7 @@ export function DetailPanel() {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex gap-1 px-1 items-center border-b border-zinc-200 dark:border-zinc-800">
+      <div className={`flex items-center gap-1 px-1 ${sectionDivider}`}>
         <TabButton active={tab === 'session'} onClick={() => setTab('session')}>
           Session
         </TabButton>
@@ -76,10 +82,8 @@ function TabButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`px-2 py-1 my-1 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-40 rounded ${
-        active
-          ? 'bg-blue-100 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300'
-          : 'text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-zinc-900 dark:hover:text-zinc-300'
+      className={`my-1 rounded px-2 py-1 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-40 ${
+        active ? accentTabActive : accentTabInactive
       }`}
     >
       {children}
