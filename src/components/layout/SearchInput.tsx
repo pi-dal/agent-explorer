@@ -19,7 +19,7 @@ export function SearchInput() {
         value={searchQuery}
         onChange={(event) => setSearchQuery(event.target.value)}
         placeholder="Search session…"
-        className="h-7 w-full rounded border border-zinc-200 bg-white pl-7 pr-7 text-xs text-zinc-800 outline-none placeholder:text-zinc-400 focus:border-sky-400 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+        className="h-7 w-full rounded border border-zinc-200 bg-white pl-7 pr-7 text-xs text-zinc-800 outline-none placeholder:text-zinc-400 focus:border-blue-400 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
       />
       {searchQuery && (
         <button

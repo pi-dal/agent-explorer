@@ -8,7 +8,7 @@ export function toolCardBorderClass({
   isFailed?: boolean
 }): string {
   if (selected) {
-    return 'border-sky-400 ring-1 ring-sky-400/40'
+    return 'border-blue-400 ring-1 ring-blue-400/40'
   }
   if (pairHighlighted) {
     return 'border-violet-400 bg-violet-50/80 ring-1 ring-violet-400/35 dark:border-violet-500 dark:bg-violet-950/30 dark:ring-violet-500/30'

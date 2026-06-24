@@ -33,7 +33,7 @@ export function ThinkingBlock({
           expanded ? 'w-full' : 'inline-flex w-fit max-w-full'
         } ${
           selected
-            ? 'border border-sky-400 px-2.5 py-1.5 ring-1 ring-sky-400/40'
+            ? 'border border-blue-400 px-2.5 py-1.5 ring-1 ring-blue-400/40'
             : 'border border-transparent px-2.5 py-1.5'
         }`}
       >

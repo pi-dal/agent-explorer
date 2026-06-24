@@ -24,7 +24,7 @@ function JsonNode({
   const [expanded, setExpanded] = useState(defaultExpanded ?? depth < 2)
   const [stringExpanded, setStringExpanded] = useState(false)
 
-  const prefix = name !== undefined ? <span className="text-sky-600 dark:text-sky-400">{name}: </span> : null
+  const prefix = name !== undefined ? <span className="text-blue-600 dark:text-blue-400">{name}: </span> : null
 
   if (value === null) {
     return (

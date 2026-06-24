@@ -32,7 +32,7 @@ export function DetailPanel() {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center border-b border-zinc-200 dark:border-zinc-800">
+      <div className="flex gap-1 px-1 items-center border-b border-zinc-200 dark:border-zinc-800">
         <TabButton active={tab === 'session'} onClick={() => setTab('session')}>
           Session
         </TabButton>
@@ -76,10 +76,10 @@ function TabButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`px-3 py-2 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-40 ${
+      className={`px-2 py-1 my-1 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-40 rounded ${
         active
-          ? 'border-b-2 border-sky-500 text-sky-600 dark:text-sky-400'
-          : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
+          ? 'bg-blue-100 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300'
+          : 'text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-zinc-900 dark:hover:text-zinc-300'
       }`}
     >
       {children}

@@ -16,7 +16,7 @@ export function TimelineItem({ event, selected, onSelect }: TimelineItemProps) {
       onClick={onSelect}
       className={`flex h-full w-full min-h-0 shrink-0 items-center gap-2 overflow-hidden border-l-2 px-2 text-left text-xs transition-colors ${
         selected
-          ? 'border-sky-500 bg-sky-50 dark:bg-sky-950/40'
+          ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40'
           : 'border-transparent hover:bg-zinc-100 dark:hover:bg-zinc-900'
       }`}
     >

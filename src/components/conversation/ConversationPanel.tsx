@@ -118,8 +118,8 @@ export function ConversationPanel() {
 
   if (items.length === 0) {
     return (
-      <div className="flex h-full flex-col bg-zinc-100/50 dark:bg-zinc-950">
-        <div className="border-b border-zinc-200 bg-white/80 px-4 py-2 text-xs font-medium text-zinc-500 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/80">
+      <div className="flex h-full flex-col">
+        <div className="border-b border-zinc-200 px-4 py-2 text-xs font-medium text-zinc-500 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/80">
           Conversation · 0 / {allItems.length} messages
         </div>
         <div className="flex flex-1 items-center justify-center p-4 text-sm text-zinc-500">
@@ -130,8 +130,8 @@ export function ConversationPanel() {
   }
 
   return (
-    <div className="flex h-full flex-col bg-zinc-100/50 dark:bg-zinc-950">
-      <div className="border-b border-zinc-200 bg-white/80 px-4 py-2 text-xs font-medium text-zinc-500 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/80">
+    <div className="flex h-full flex-col">
+      <div className="border-b border-zinc-200 px-4 py-2 text-xs font-medium text-zinc-500 backdrop-blur dark:border-zinc-800">
         Conversation · {items.length}
         {items.length !== allItems.length ? ` / ${allItems.length}` : ''} messages ·{' '}
         {session.meta.turnCount} turns
