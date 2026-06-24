@@ -19,6 +19,9 @@ export function EventSummary({ selection }: { selection: Selection }) {
   if (record) {
     if (typeof record.type === 'string') rows.push({ label: 'Type', value: record.type })
     if (typeof record.uuid === 'string') rows.push({ label: 'UUID', value: record.uuid })
+    if (typeof record.requestId === 'string') {
+      rows.push({ label: 'Request ID', value: record.requestId })
+    }
     if (typeof record.sessionId === 'string') {
       rows.push({ label: 'Session', value: record.sessionId })
     }

@@ -288,6 +288,7 @@ export const claudeTranscriptAdapter: SessionAdapter = {
         preview: timelinePreview(type, record),
         turnIndex,
         conversationItemId: linkedItemIds[0],
+        requestId: getString(record, 'requestId'),
         raw: record,
       })
     }

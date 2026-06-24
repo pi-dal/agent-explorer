@@ -2,6 +2,7 @@ import type { KeyboardEvent } from 'react'
 import {
   accentTimelineSelected,
   hoverRow,
+  requestHighlight,
   textBody,
   textFaint,
   textMuted,
@@ -14,11 +15,18 @@ export const TIMELINE_ITEM_HEIGHT = 44
 interface TimelineItemProps {
   event: TimelineEvent
   selected: boolean
+  requestHighlighted?: boolean
   onSelect: () => void
   onKeyDown?: (event: KeyboardEvent<HTMLButtonElement>) => void
 }
 
-export function TimelineItem({ event, selected, onSelect, onKeyDown }: TimelineItemProps) {
+export function TimelineItem({
+  event,
+  selected,
+  requestHighlighted = false,
+  onSelect,
+  onKeyDown,
+}: TimelineItemProps) {
   return (
     <button
       type="button"
@@ -30,7 +38,9 @@ export function TimelineItem({ event, selected, onSelect, onKeyDown }: TimelineI
       className={`flex h-full w-full min-h-0 shrink-0 items-center gap-2 overflow-hidden border-l-2 px-2 text-left text-xs ${
         selected
           ? accentTimelineSelected
-          : `border-transparent ${hoverRow}`
+          : requestHighlighted
+            ? `border-transparent ${requestHighlight}`
+            : `border-transparent ${hoverRow}`
       }`}
     >
       <span className={`w-8 shrink-0 font-mono ${textFaint}`}>#{event.lineIndex}</span>

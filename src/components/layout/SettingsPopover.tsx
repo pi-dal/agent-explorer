@@ -56,7 +56,9 @@ export function SettingsPopover() {
   const setHideThinking = useSettingsStore((s) => s.setHideThinking)
   const setHideToolCalls = useSettingsStore((s) => s.setHideToolCalls)
   const syncSelection = useSettingsStore((s) => s.syncSelection)
+  const highlightSameRequest = useSettingsStore((s) => s.highlightSameRequest)
   const setSyncSelection = useSettingsStore((s) => s.setSyncSelection)
+  const setHighlightSameRequest = useSettingsStore((s) => s.setHighlightSameRequest)
 
   useEffect(() => {
     if (!open) return
@@ -110,6 +112,12 @@ export function SettingsPopover() {
             description="Link timeline and conversation selection, scrolling, and highlights."
             checked={syncSelection}
             onChange={setSyncSelection}
+          />
+          <SettingToggle
+            label="Highlight same request"
+            description="In the timeline, highlight other events that share the selected event's request ID."
+            checked={highlightSameRequest}
+            onChange={setHighlightSameRequest}
           />
         </div>
       )}

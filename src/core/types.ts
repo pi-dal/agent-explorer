@@ -46,6 +46,7 @@ export interface TimelineEvent {
   preview?: string
   turnIndex?: number
   conversationItemId?: string
+  requestId?: string
   raw: unknown
 }
 

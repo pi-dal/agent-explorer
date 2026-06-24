@@ -132,6 +132,35 @@ describe('claudeTranscriptAdapter.parse', () => {
     expect(session.events[2]?.label).toContain('tool_result')
   })
 
+  it('extracts requestId onto timeline events', () => {
+    const requestId = 'req_011CUJh4afoeKoW8DPCaCwmz'
+    const session = claudeTranscriptAdapter.parse(
+      [
+        line({
+          type: 'user',
+          uuid: 'user-1',
+          message: { role: 'user', content: 'Hello' },
+        }),
+        line(
+          {
+            type: 'assistant',
+            uuid: 'asst-1',
+            requestId,
+            message: {
+              role: 'assistant',
+              content: [{ type: 'text', text: 'Hi there!' }],
+            },
+          },
+          2,
+        ),
+      ],
+      'test.jsonl',
+    )
+
+    expect(session.events[0]?.requestId).toBeUndefined()
+    expect(session.events[1]?.requestId).toBe(requestId)
+  })
+
   it('truncates very large thinking blocks at parse time', () => {
     const longThinking = 'z'.repeat(BLOCK_TEXT_LIMIT + 500)
     const session = claudeTranscriptAdapter.parse(

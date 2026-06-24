@@ -11,6 +11,7 @@ export interface ExplorerSettings {
   hideThinking: boolean
   hideToolCalls: boolean
   syncSelection: boolean
+  highlightSameRequest: boolean
 }
 
 interface SettingsState extends ExplorerSettings {
@@ -20,6 +21,7 @@ interface SettingsState extends ExplorerSettings {
   setHideThinking: (hide: boolean) => void
   setHideToolCalls: (hide: boolean) => void
   setSyncSelection: (sync: boolean) => void
+  setHighlightSameRequest: (highlight: boolean) => void
   resetSessionFilters: () => void
 }
 
@@ -30,6 +32,7 @@ const DEFAULT_SETTINGS: ExplorerSettings = {
   hideThinking: false,
   hideToolCalls: false,
   syncSelection: true,
+  highlightSameRequest: true,
 }
 
 export const useSettingsStore = create<SettingsState>()(
@@ -43,6 +46,7 @@ export const useSettingsStore = create<SettingsState>()(
       setHideThinking: (hideThinking) => set({ hideThinking }),
       setHideToolCalls: (hideToolCalls) => set({ hideToolCalls }),
       setSyncSelection: (syncSelection) => set({ syncSelection }),
+      setHighlightSameRequest: (highlightSameRequest) => set({ highlightSameRequest }),
       resetSessionFilters: () =>
         set({
           searchQuery: '',
@@ -57,6 +61,7 @@ export const useSettingsStore = create<SettingsState>()(
         hideThinking: state.hideThinking,
         hideToolCalls: state.hideToolCalls,
         syncSelection: state.syncSelection,
+        highlightSameRequest: state.highlightSameRequest,
       }),
     },
   ),

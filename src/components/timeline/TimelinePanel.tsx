@@ -23,9 +23,15 @@ export function TimelinePanel() {
   const hideSystem = useSettingsStore((s) => s.hideSystem)
   const hideToolCalls = useSettingsStore((s) => s.hideToolCalls)
   const syncSelection = useSettingsStore((s) => s.syncSelection)
+  const highlightSameRequest = useSettingsStore((s) => s.highlightSameRequest)
   const parentRef = useRef<HTMLDivElement>(null)
 
   const allEvents = session?.events ?? EMPTY_EVENTS
+
+  const activeRequestId = useMemo(() => {
+    if (!highlightSameRequest || !selection?.eventId) return undefined
+    return allEvents.find((event) => event.id === selection.eventId)?.requestId
+  }, [allEvents, highlightSameRequest, selection?.eventId])
   const events = useMemo(
     () =>
       filterTimelineEvents(allEvents, {
@@ -148,6 +154,11 @@ export function TimelinePanel() {
                   <TimelineItem
                     event={event}
                     selected={selection?.eventId === event.id}
+                    requestHighlighted={
+                      !!activeRequestId &&
+                      event.requestId === activeRequestId &&
+                      selection?.eventId !== event.id
+                    }
                     onSelect={() => selectTimelineEvent(event.id)}
                     onKeyDown={handleTimelineKeyDown}
                   />

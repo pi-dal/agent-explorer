@@ -52,6 +52,9 @@
   --color-syntax-key: var(--ui-syntax-key);
   --color-syntax-number: var(--ui-syntax-number);
   --color-syntax-string: var(--ui-syntax-string);
+
+  /* Request grouping (Claude API requestId) */
+  --color-request-highlight: var(--ui-request-highlight);
 }
 
 :root {
@@ -83,6 +86,7 @@
   --ui-syntax-key: var(--color-blue-600);
   --ui-syntax-number: var(--color-amber-600);
   --ui-syntax-string: var(--color-emerald-700);
+  --ui-request-highlight: var(--color-blue-50);
 }
 
 :root.dark {
@@ -114,6 +118,7 @@
   --ui-syntax-key: var(--color-blue-400);
   --ui-syntax-number: var(--color-amber-400);
   --ui-syntax-string: var(--color-emerald-400);
+  --ui-request-highlight: color-mix(in oklab, var(--color-blue-500) 12%, transparent);
 
   --color-accent: var(--color-neutral-100);
   --color-accent-hover: var(--color-neutral-300);

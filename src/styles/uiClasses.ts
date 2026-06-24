@@ -75,3 +75,5 @@ export const panelHeaderSticky =
   'border-b border-border bg-surface-overlay text-xs font-medium text-muted-foreground backdrop-blur'
 
 export const turnDividerLine = 'bg-divider'
+
+export const requestHighlight = 'bg-request-highlight'
