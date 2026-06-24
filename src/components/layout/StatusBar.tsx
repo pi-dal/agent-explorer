@@ -86,11 +86,14 @@ export function StatusBar() {
 
       {error && <span className="truncate text-xs text-red-500">{error}</span>}
 
-      {session && <SearchInput />}
-
       <div className="flex-1" />
 
-      {session && <SettingsPopover />}
+      {session && (
+        <div className="flex items-center gap-1.5">
+          <SearchInput />
+          <SettingsPopover />
+        </div>
+      )}
 
       <button
         type="button"

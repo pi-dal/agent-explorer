@@ -14,7 +14,8 @@ export function SearchInput() {
         aria-hidden
       />
       <input
-        type="search"
+        type="text"
+        role="searchbox"
         value={searchQuery}
         onChange={(event) => setSearchQuery(event.target.value)}
         placeholder="Search session…"
