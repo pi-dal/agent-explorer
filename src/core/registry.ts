@@ -1,9 +1,10 @@
 import { claudeTranscriptAdapter } from '../adapters/claude-transcript'
+import { codexRolloutAdapter } from '../adapters/codex-rollout'
 import type { SessionAdapter } from '../adapters/types'
 import { parseJsonlText } from './jsonl'
 import type { ExplorerSession } from './types'
 
-const adapters: SessionAdapter[] = [claudeTranscriptAdapter]
+const adapters: SessionAdapter[] = [claudeTranscriptAdapter, codexRolloutAdapter]
 
 export function getAdapters(): SessionAdapter[] {
   return adapters
@@ -26,7 +27,7 @@ export function detectAndParse(text: string, fileName: string): ExplorerSession 
 
   if (bestScore < 0.5) {
     throw new Error(
-      'Unrecognized JSONL format. MVP supports Claude Code transcript logs only.',
+      'Unrecognized JSONL format. Supported formats: Claude Code transcripts and Codex rollout logs.',
     )
   }
 
