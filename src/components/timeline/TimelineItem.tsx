@@ -1,3 +1,4 @@
+import type { KeyboardEvent } from 'react'
 import {
   accentTimelineSelected,
   hoverRow,
@@ -14,13 +15,18 @@ interface TimelineItemProps {
   event: TimelineEvent
   selected: boolean
   onSelect: () => void
+  onKeyDown?: (event: KeyboardEvent<HTMLButtonElement>) => void
 }
 
-export function TimelineItem({ event, selected, onSelect }: TimelineItemProps) {
+export function TimelineItem({ event, selected, onSelect, onKeyDown }: TimelineItemProps) {
   return (
     <button
       type="button"
+      role="option"
+      id={`timeline-event-${event.id}`}
+      aria-selected={selected}
       onClick={onSelect}
+      onKeyDown={onKeyDown}
       className={`flex h-full w-full min-h-0 shrink-0 items-center gap-2 overflow-hidden border-l-2 px-2 text-left text-xs ${
         selected
           ? accentTimelineSelected

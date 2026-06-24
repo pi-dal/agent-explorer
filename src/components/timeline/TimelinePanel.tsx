@@ -1,4 +1,4 @@
-import { useRef, useEffect, useMemo } from 'react'
+import { useRef, useEffect, useMemo, useCallback, type KeyboardEvent } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { emptyState, emptyStateXs, panelHeader } from '../../styles/uiClasses'
 import { filterTimelineEvents } from '../../core/filter'
@@ -7,6 +7,10 @@ import { useSessionStore } from '../../store/sessionStore'
 import { useSettingsStore } from '../../store/settingsStore'
 import { TIMELINE_ITEM_HEIGHT, TimelineItem } from './TimelineItem'
 import { TimelineCategoryFilter } from './TimelineCategoryFilter'
+import {
+  findTimelineEventIndex,
+  resolveTimelineNavigationIndex,
+} from './timelineNavigation'
 
 const EMPTY_EVENTS: TimelineEvent[] = []
 
@@ -42,6 +46,45 @@ export function TimelinePanel() {
     overscan: 12,
   })
 
+  const scrollToEventIndex = useCallback(
+    (index: number) => {
+      if (index < 0 || !parentRef.current) return
+      virtualizer.scrollToIndex(index, { align: 'auto' })
+    },
+    [virtualizer],
+  )
+
+  const navigateSelection = useCallback(
+    (direction: -1 | 1) => {
+      if (events.length === 0) return
+      const currentIndex = findTimelineEventIndex(events, selection?.eventId)
+      const nextIndex = resolveTimelineNavigationIndex(
+        events.length,
+        currentIndex,
+        direction,
+      )
+      if (nextIndex === null || nextIndex === currentIndex) return
+      const event = events[nextIndex]
+      if (!event) return
+      selectTimelineEvent(event.id)
+      scrollToEventIndex(nextIndex)
+    },
+    [events, selection?.eventId, selectTimelineEvent, scrollToEventIndex],
+  )
+
+  const handleTimelineKeyDown = useCallback(
+    (event: KeyboardEvent) => {
+      if (event.key === 'ArrowDown') {
+        event.preventDefault()
+        navigateSelection(1)
+      } else if (event.key === 'ArrowUp') {
+        event.preventDefault()
+        navigateSelection(-1)
+      }
+    },
+    [navigateSelection],
+  )
+
   useEffect(() => {
     if (
       !syncSelection ||
@@ -70,7 +113,17 @@ export function TimelinePanel() {
         {events.length !== allEvents.length ? ` / ${allEvents.length}` : ''} events
       </div>
       <TimelineCategoryFilter />
-      <div ref={parentRef} className="flex-1 overflow-auto">
+      <div
+        ref={parentRef}
+        tabIndex={0}
+        role="listbox"
+        aria-label="Timeline events"
+        aria-activedescendant={
+          selection?.eventId ? `timeline-event-${selection.eventId}` : undefined
+        }
+        onKeyDown={handleTimelineKeyDown}
+        className="flex-1 overflow-auto outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent/30"
+      >
         {events.length === 0 ? (
           <div className={`flex h-full items-center justify-center p-4 ${emptyStateXs}`}>
             No events match the current filters
@@ -96,6 +149,7 @@ export function TimelinePanel() {
                     event={event}
                     selected={selection?.eventId === event.id}
                     onSelect={() => selectTimelineEvent(event.id)}
+                    onKeyDown={handleTimelineKeyDown}
                   />
                 </div>
               )
