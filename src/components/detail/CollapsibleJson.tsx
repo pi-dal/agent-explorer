@@ -6,6 +6,7 @@ import {
   textMuted,
 } from '../../styles/uiClasses'
 import { ChevronToggle } from '../shared/ChevronToggle'
+import { ToolbarButton } from '../shared/ToolbarButton'
 
 const STRING_LIMIT = 200
 const LEVEL_INDENT = '2ch'
@@ -157,10 +158,9 @@ export function CollapsibleJson({ value, defaultExpanded }: CollapsibleJsonProps
 
   return (
     <div className="group relative">
-      <button
-        type="button"
+      <ToolbarButton
         onClick={handleCopy}
-        className={`absolute right-0 top-0 z-10 inline-flex h-7 w-7 items-center justify-center rounded opacity-0 transition-opacity focus-visible:opacity-100 group-hover:opacity-100 ${overlayIconButton}`}
+        className={`absolute right-0 top-0 z-10 opacity-0 transition-opacity focus-visible:opacity-100 group-hover:opacity-100 ${overlayIconButton}`}
         aria-label={copied ? 'Copied' : 'Copy JSON'}
         title={copied ? 'Copied' : 'Copy JSON'}
       >
@@ -169,7 +169,7 @@ export function CollapsibleJson({ value, defaultExpanded }: CollapsibleJsonProps
         ) : (
           <Copy size={14} strokeWidth={1.75} aria-hidden />
         )}
-      </button>
+      </ToolbarButton>
       <JsonNode value={value} depth={0} defaultExpanded={defaultExpanded} />
     </div>
   )

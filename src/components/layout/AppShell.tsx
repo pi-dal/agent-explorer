@@ -4,7 +4,7 @@ import { ConversationPanel } from '../conversation/ConversationPanel'
 import { DetailPanel } from '../detail/DetailPanel'
 import { TimelinePanel } from '../timeline/TimelinePanel'
 import { ResizableLayout } from './ResizableLayout'
-import { StatusBar } from './StatusBar'
+import { StatusBar } from '../status/StatusBar'
 
 export function AppShell() {
   const theme = useSessionStore((s) => s.theme)

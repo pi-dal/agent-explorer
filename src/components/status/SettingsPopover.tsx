@@ -3,12 +3,12 @@ import { useEffect, useRef, useState } from 'react'
 import {
   dropdownPanel,
   hoverRow,
-  iconButton,
   sectionDivider,
   textBody,
   textFaint,
   textMuted,
 } from '../../styles/uiClasses'
+import { ToolbarButton } from '../shared/ToolbarButton'
 import { useSettingsStore } from '../../store/settingsStore'
 
 function SettingsSection({ title }: { title: string }) {
@@ -75,16 +75,14 @@ export function SettingsPopover() {
 
   return (
     <div ref={rootRef} className="relative">
-      <button
-        type="button"
+      <ToolbarButton
         onClick={() => setOpen((value) => !value)}
-        className={`inline-flex h-7 w-7 items-center justify-center rounded ${iconButton}`}
         aria-label="Settings"
         aria-expanded={open}
         title="Settings"
       >
         <Settings size={14} strokeWidth={1.75} aria-hidden />
-      </button>
+      </ToolbarButton>
       {open && (
         <div className={`absolute right-0 top-full z-20 mt-1 w-64 ${dropdownPanel}`}>
           <SettingsSection title="Display" />

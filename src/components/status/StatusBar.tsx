@@ -1,10 +1,14 @@
 import { Moon, Sun } from 'lucide-react'
 import { useRef, type ChangeEvent } from 'react'
 import { iconButton } from '../../styles/uiClasses'
+import { GitHub } from '../shared/icons/GitHub'
+import { ToolbarButton } from '../shared/ToolbarButton'
 import { useSessionStore } from '../../store/sessionStore'
 import { ParseWarningsBadge } from './ParseWarningsBadge'
 import { SearchInput } from './SearchInput'
 import { SettingsPopover } from './SettingsPopover'
+
+const GITHUB_REPOSITORY_URL = 'https://github.com/unixzii/agent-explorer'
 
 export function StatusBar() {
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -35,6 +39,10 @@ export function StatusBar() {
     setTheme(next)
   }
 
+  function openGitHub() {
+    window.open(GITHUB_REPOSITORY_URL, '_blank', 'noopener,noreferrer')
+  }
+
   const isDark =
     theme === 'dark' ||
     (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
@@ -59,7 +67,7 @@ export function StatusBar() {
           disabled={isLoading}
           className={`rounded px-2.5 py-1 text-xs disabled:opacity-50 ${iconButton}`}
         >
-          Sample
+          Load Sample
         </button>
       </div>
 
@@ -99,10 +107,8 @@ export function StatusBar() {
           </>
         )}
 
-        <button
-          type="button"
+        <ToolbarButton
           onClick={toggleTheme}
-          className={`inline-flex h-7 w-7 items-center justify-center rounded ${iconButton}`}
           aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
           title={isDark ? 'Light mode' : 'Dark mode'}
         >
@@ -111,7 +117,15 @@ export function StatusBar() {
           ) : (
             <Moon size={14} strokeWidth={1.75} aria-hidden />
           )}
-        </button>
+        </ToolbarButton>
+
+        <ToolbarButton
+          onClick={openGitHub}
+          aria-label="GitHub Repository"
+          title="GitHub Repository"
+        >
+          <GitHub size={16} />
+        </ToolbarButton>
       </div>
     </header>
   )
