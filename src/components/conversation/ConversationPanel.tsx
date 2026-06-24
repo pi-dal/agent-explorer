@@ -1,6 +1,8 @@
 import { useRef, useEffect, useMemo, useCallback, useState } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
+import { filterConversationItems } from '../../core/filter'
 import { useSessionStore } from '../../store/sessionStore'
+import { useSettingsStore } from '../../store/settingsStore'
 import type { ConversationListItem } from '../../core/types'
 import { ConversationMessage } from './ConversationMessage'
 import { estimateRowSize } from './estimateRowSize'
@@ -26,7 +28,14 @@ export function ConversationPanel() {
   const parentRef = useRef<HTMLDivElement>(null)
   const [hoveredItemId, setHoveredItemId] = useState<string | null>(null)
 
-  const items = session?.conversationItems ?? EMPTY_ITEMS
+  const allItems = session?.conversationItems ?? EMPTY_ITEMS
+  const searchQuery = useSettingsStore((s) => s.searchQuery)
+  const hideSystem = useSettingsStore((s) => s.hideSystem)
+  const hideThinking = useSettingsStore((s) => s.hideThinking)
+  const items = useMemo(
+    () => filterConversationItems(allItems, { searchQuery, hideSystem, hideThinking }),
+    [allItems, searchQuery, hideSystem, hideThinking],
+  )
   const selectedItemId = selection?.conversationItemId
 
   const activeToolCallId = useMemo(
@@ -90,7 +99,7 @@ export function ConversationPanel() {
     )
   }
 
-  if (items.length === 0) {
+  if (allItems.length === 0) {
     return (
       <div className="flex h-full items-center justify-center p-4 text-sm text-zinc-500">
         No conversation items in this file
@@ -98,10 +107,25 @@ export function ConversationPanel() {
     )
   }
 
+  if (items.length === 0) {
+    return (
+      <div className="flex h-full flex-col bg-zinc-100/50 dark:bg-zinc-950">
+        <div className="border-b border-zinc-200 bg-white/80 px-4 py-2 text-xs font-medium text-zinc-500 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/80">
+          Conversation · 0 / {allItems.length} messages
+        </div>
+        <div className="flex flex-1 items-center justify-center p-4 text-sm text-zinc-500">
+          No messages match the current filters
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="flex h-full flex-col bg-zinc-100/50 dark:bg-zinc-950">
       <div className="border-b border-zinc-200 bg-white/80 px-4 py-2 text-xs font-medium text-zinc-500 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/80">
-        Conversation · {items.length} messages · {session.meta.turnCount} turns
+        Conversation · {items.length}
+        {items.length !== allItems.length ? ` / ${allItems.length}` : ''} messages ·{' '}
+        {session.meta.turnCount} turns
       </div>
       <div ref={parentRef} className="flex-1 overflow-auto py-3">
         <div

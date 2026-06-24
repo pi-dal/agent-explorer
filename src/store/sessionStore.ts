@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { detectAndParse } from '../core/registry'
 import type { ExplorerSession, Selection } from '../core/types'
+import { useSettingsStore } from './settingsStore'
 
 type Theme = 'light' | 'dark' | 'system'
 
@@ -38,18 +39,12 @@ export const useSessionStore = create<SessionState>()(
 
       loadText: (text, fileName) => {
         set({ isLoading: true, error: null })
+        useSettingsStore.getState().resetSessionFilters()
         try {
           const session = detectAndParse(text, fileName)
           set({
             session,
-            selection: session.events[0]
-              ? {
-                  source: 'timeline',
-                  eventId: session.events[0].id,
-                  lineIndex: session.events[0].lineIndex,
-                  raw: session.events[0].raw,
-                }
-              : null,
+            selection: null,
             isLoading: false,
           })
         } catch (error) {

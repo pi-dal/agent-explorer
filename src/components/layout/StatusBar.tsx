@@ -2,6 +2,8 @@ import { Moon, Sun } from 'lucide-react'
 import { useRef, type ChangeEvent } from 'react'
 import { useSessionStore } from '../../store/sessionStore'
 import { ParseWarningsBadge } from './ParseWarningsBadge'
+import { SearchInput } from './SearchInput'
+import { SettingsPopover } from './SettingsPopover'
 
 export function StatusBar() {
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -84,7 +86,11 @@ export function StatusBar() {
 
       {error && <span className="truncate text-xs text-red-500">{error}</span>}
 
+      {session && <SearchInput />}
+
       <div className="flex-1" />
+
+      {session && <SettingsPopover />}
 
       <button
         type="button"
