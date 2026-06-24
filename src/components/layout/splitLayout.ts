@@ -1,7 +1,7 @@
 export const LAYOUT_STORAGE_KEY = 'agent-explorer-split-layout'
 
-export const DEFAULT_LEFT_WIDTH = 320
-export const DEFAULT_RIGHT_WIDTH = 380
+export const DEFAULT_LEFT_WIDTH = 360
+export const DEFAULT_RIGHT_WIDTH = 400
 
 export const MIN_LEFT_WIDTH = 220
 export const MIN_RIGHT_WIDTH = 260
