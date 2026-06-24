@@ -1,0 +1,168 @@
+import { Check, Copy } from 'lucide-react'
+import { useState } from 'react'
+import { ChevronToggle } from '../shared/ChevronToggle'
+
+const STRING_LIMIT = 200
+const LEVEL_INDENT = '2ch'
+
+interface CollapsibleJsonProps {
+  value: unknown
+  defaultExpanded?: boolean
+}
+
+function JsonNode({
+  name,
+  value,
+  depth,
+  defaultExpanded,
+}: {
+  name?: string
+  value: unknown
+  depth: number
+  defaultExpanded?: boolean
+}) {
+  const [expanded, setExpanded] = useState(defaultExpanded ?? depth < 2)
+  const [stringExpanded, setStringExpanded] = useState(false)
+
+  const prefix = name !== undefined ? <span className="text-sky-600 dark:text-sky-400">{name}: </span> : null
+
+  if (value === null) {
+    return (
+      <div style={depth > 1 ? { paddingLeft: LEVEL_INDENT } : undefined} className="font-mono text-xs leading-5">
+        {prefix}
+        <span className="text-zinc-500">null</span>
+      </div>
+    )
+  }
+
+  if (typeof value === 'boolean' || typeof value === 'number') {
+    return (
+      <div style={depth > 1 ? { paddingLeft: LEVEL_INDENT } : undefined} className="font-mono text-xs leading-5">
+        {prefix}
+        <span className="text-amber-600 dark:text-amber-400">{String(value)}</span>
+      </div>
+    )
+  }
+
+  if (typeof value === 'string') {
+    const showFull = stringExpanded || value.length <= STRING_LIMIT
+    const display = showFull ? value : `${value.slice(0, STRING_LIMIT)}…`
+    return (
+      <div style={depth > 1 ? { paddingLeft: LEVEL_INDENT } : undefined} className="font-mono text-xs leading-5">
+        {prefix}
+        <span className="text-emerald-700 dark:text-emerald-400 break-all">"{display}"</span>
+        {value.length > STRING_LIMIT && (
+          <button
+            type="button"
+            onClick={() => setStringExpanded((v) => !v)}
+            className="ml-2 text-[10px] text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
+          >
+            {stringExpanded ? 'collapse' : 'expand'}
+          </button>
+        )}
+      </div>
+    )
+  }
+
+  if (Array.isArray(value)) {
+    if (value.length === 0) {
+      return (
+        <div style={depth > 1 ? { paddingLeft: LEVEL_INDENT } : undefined} className="font-mono text-xs leading-5">
+          {prefix}
+          <span className="text-zinc-500">[]</span>
+        </div>
+      )
+    }
+    return (
+      <div style={depth > 1 ? { paddingLeft: LEVEL_INDENT } : undefined} className="font-mono text-xs leading-5">
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          className="inline-flex items-center gap-1 text-left hover:text-zinc-950 dark:hover:text-white"
+        >
+          {prefix}
+          <ChevronToggle expanded={expanded} className="text-zinc-500" />
+          <span className="text-zinc-500">Array[{value.length}]</span>
+        </button>
+        {expanded &&
+          value.map((item, index) => (
+            <JsonNode
+              key={index}
+              name={String(index)}
+              value={item}
+              depth={depth + 1}
+              defaultExpanded={depth < 1}
+            />
+          ))}
+      </div>
+    )
+  }
+
+  if (typeof value === 'object') {
+    const entries = Object.entries(value as Record<string, unknown>)
+    if (entries.length === 0) {
+      return (
+        <div style={depth > 1 ? { paddingLeft: LEVEL_INDENT } : undefined} className="font-mono text-xs leading-5">
+          {prefix}
+          <span className="text-zinc-500">{'{}'}</span>
+        </div>
+      )
+    }
+    return (
+      <div style={depth > 1 ? { paddingLeft: LEVEL_INDENT } : undefined} className="font-mono text-xs leading-5">
+        {depth === 0 ? null : (
+          <button
+            type="button"
+            onClick={() => setExpanded((v) => !v)}
+            className="inline-flex items-center gap-1 text-left hover:text-zinc-950 dark:hover:text-white"
+          >
+            {prefix}
+            <ChevronToggle expanded={expanded} className="text-zinc-500" />
+            <span className="text-zinc-500">Object({entries.length})</span>
+          </button>
+        )}
+        {(depth === 0 || expanded) &&
+          entries.map(([key, child]) => (
+            <JsonNode
+              key={key}
+              name={key}
+              value={child}
+              depth={depth + 1}
+              defaultExpanded={depth < 1}
+            />
+          ))}
+      </div>
+    )
+  }
+
+  return null
+}
+
+export function CollapsibleJson({ value, defaultExpanded }: CollapsibleJsonProps) {
+  const [copied, setCopied] = useState(false)
+
+  async function handleCopy() {
+    await navigator.clipboard.writeText(JSON.stringify(value, null, 2))
+    setCopied(true)
+    window.setTimeout(() => setCopied(false), 1500)
+  }
+
+  return (
+    <div className="group relative">
+      <button
+        type="button"
+        onClick={handleCopy}
+        className="absolute right-0 top-0 z-10 inline-flex h-7 w-7 items-center justify-center rounded border border-zinc-200 bg-white/90 text-zinc-600 opacity-0 backdrop-blur-sm transition-opacity hover:bg-zinc-50 focus-visible:opacity-100 group-hover:opacity-100 dark:border-zinc-700 dark:bg-zinc-950/90 dark:text-zinc-300 dark:hover:bg-zinc-900"
+        aria-label={copied ? 'Copied' : 'Copy JSON'}
+        title={copied ? 'Copied' : 'Copy JSON'}
+      >
+        {copied ? (
+          <Check size={14} strokeWidth={1.75} aria-hidden />
+        ) : (
+          <Copy size={14} strokeWidth={1.75} aria-hidden />
+        )}
+      </button>
+      <JsonNode value={value} depth={0} defaultExpanded={defaultExpanded} />
+    </div>
+  )
+}

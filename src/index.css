@@ -1,0 +1,101 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: ui-monospace, Consolas, monospace;
+}
+
+:root {
+  color-scheme: light;
+}
+
+:root.dark {
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  @apply bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.split-view {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  overflow: hidden;
+}
+
+.split-pane {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.split-pane-fallback {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.split-view:has(.split-pane-fallback) {
+  display: flex;
+}
+
+.split-pane-center {
+  flex: 2;
+}
+
+.split-handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 2;
+  cursor: col-resize;
+  touch-action: none;
+  background: transparent;
+}
+
+.split-handle::before {
+  content: '';
+  position: absolute;
+  inset: 0 -5px;
+}
+
+.split-handle::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  transform: translateX(-50%);
+  background-color: rgb(228 228 231);
+  transition: background-color 150ms, width 150ms;
+}
+
+:root.dark .split-handle::after {
+  background-color: rgb(39 39 42);
+}
+
+.split-handle:hover::after,
+.split-handle-active::after {
+  width: 3px;
+  background-color: rgb(14 165 233);
+}
