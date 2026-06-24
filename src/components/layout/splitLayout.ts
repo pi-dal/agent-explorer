@@ -1,7 +1,5 @@
 export const LAYOUT_STORAGE_KEY = 'agent-explorer-split-layout'
 
-export const HANDLE_WIDTH = 6
-
 export const DEFAULT_LEFT_WIDTH = 320
 export const DEFAULT_RIGHT_WIDTH = 380
 
@@ -42,10 +40,7 @@ function clamp(value: number, min: number, max: number): number {
 }
 
 export function maxSideWidth(containerWidth: number): number {
-  return Math.max(
-    0,
-    containerWidth - HANDLE_WIDTH * 2 - MIN_CENTER_WIDTH,
-  )
+  return Math.max(0, containerWidth - MIN_CENTER_WIDTH)
 }
 
 export function fitLayout(
@@ -90,14 +85,14 @@ export function computePaneRects(
   const fitted = fitLayout(layout, containerWidth)
   const centerWidth = Math.max(
     MIN_CENTER_WIDTH,
-    containerWidth - fitted.leftWidth - fitted.rightWidth - HANDLE_WIDTH * 2,
+    containerWidth - fitted.leftWidth - fitted.rightWidth,
   )
 
   const left = { left: 0, width: fitted.leftWidth }
-  const centerLeft = fitted.leftWidth + HANDLE_WIDTH
+  const centerLeft = fitted.leftWidth
   const center = { left: centerLeft, width: centerWidth }
   const right = {
-    left: centerLeft + centerWidth + HANDLE_WIDTH,
+    left: centerLeft + centerWidth,
     width: fitted.rightWidth,
   }
 
@@ -115,7 +110,7 @@ export function clampLeftWidth(
   rightWidth: number,
   containerWidth: number,
 ): number {
-  const maxLeft = containerWidth - rightWidth - HANDLE_WIDTH * 2 - MIN_CENTER_WIDTH
+  const maxLeft = containerWidth - rightWidth - MIN_CENTER_WIDTH
   return clamp(nextLeft, MIN_LEFT_WIDTH, Math.max(MIN_LEFT_WIDTH, maxLeft))
 }
 
@@ -124,6 +119,6 @@ export function clampRightWidth(
   leftWidth: number,
   containerWidth: number,
 ): number {
-  const maxRight = containerWidth - leftWidth - HANDLE_WIDTH * 2 - MIN_CENTER_WIDTH
+  const maxRight = containerWidth - leftWidth - MIN_CENTER_WIDTH
   return clamp(nextRight, MIN_RIGHT_WIDTH, Math.max(MIN_RIGHT_WIDTH, maxRight))
 }

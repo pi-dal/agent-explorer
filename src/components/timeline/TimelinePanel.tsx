@@ -122,7 +122,7 @@ export function TimelinePanel() {
           selection?.eventId ? `timeline-event-${selection.eventId}` : undefined
         }
         onKeyDown={handleTimelineKeyDown}
-        className="flex-1 overflow-auto outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent/30"
+        className="flex-1 overflow-auto outline-none bg-surface focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent/30"
       >
         {events.length === 0 ? (
           <div className={`flex h-full items-center justify-center p-4 ${emptyStateXs}`}>

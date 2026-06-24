@@ -57,7 +57,7 @@ export function DetailPanel() {
           Raw JSON
         </TabButton>
       </div>
-      <div className="flex-1 overflow-auto p-3">
+      <div className="flex-1 overflow-auto p-3 bg-surface">
         {tab === 'session' && <SessionMetaPanel session={session} />}
         {tab === 'summary' && selection && <EventSummary selection={selection} />}
         {tab === 'raw' && selection && <CollapsibleJson value={selection.raw} />}

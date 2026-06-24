@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
-import { HANDLE_WIDTH } from './splitLayout'
 import { useSplitLayout } from './useSplitLayout'
+
+const HANDLE_WIDTH = 6
 
 interface SplitViewProps {
   left: ReactNode
@@ -22,7 +23,7 @@ function SplitHandle({
       role="separator"
       aria-orientation="vertical"
       className={`split-handle ${active ? 'split-handle-active' : ''}`}
-      style={{ left, width: HANDLE_WIDTH }}
+      style={{ left: left - HANDLE_WIDTH / 2, width: HANDLE_WIDTH }}
       onPointerDown={(event) => {
         event.preventDefault()
         event.currentTarget.setPointerCapture(event.pointerId)
