@@ -145,9 +145,6 @@ function timelinePreview(type: string, record: Record<string, unknown>): string 
 }
 
 export const claudeTranscriptAdapter: SessionAdapter = {
-  id: 'claude-code-transcript',
-  label: 'Claude Code Transcript',
-
   detect(samples: ParsedLine[]): number {
     if (samples.length === 0) return 0
     let hits = 0
@@ -296,7 +293,7 @@ export const claudeTranscriptAdapter: SessionAdapter = {
     }
 
     return {
-      adapterId: 'claude-code-transcript',
+      fileType: 'Claude Code',
       fileName,
       meta: {
         sessionId,

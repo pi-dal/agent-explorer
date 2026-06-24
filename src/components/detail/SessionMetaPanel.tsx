@@ -8,7 +8,7 @@ export function SessionMetaPanel({ session }: { session: ExplorerSession }) {
 
   const rows: Array<{ label: string; value: string }> = [
     { label: 'File', value: session.fileName },
-    { label: 'Adapter', value: session.adapterId },
+    { label: 'File type', value: session.fileType },
     { label: 'Events', value: String(meta.eventCount) },
     { label: 'Turns', value: String(meta.turnCount) },
     { label: 'Tool calls', value: String(stats.toolCallCount) },

@@ -1,5 +1,3 @@
-export type AdapterId = 'claude-code-transcript' | (string & {})
-
 export type EventCategory =
   | 'user'
   | 'assistant'
@@ -64,7 +62,7 @@ export interface ConversationListItem {
 }
 
 export interface ExplorerSession {
-  adapterId: AdapterId
+  fileType: string
   fileName: string
   meta: SessionMeta
   events: TimelineEvent[]
