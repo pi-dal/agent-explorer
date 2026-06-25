@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { detectAndParse } from '../core/registry'
 import { parseJsonlText } from '../core/jsonl'
+import { BLOCK_TEXT_LIMIT } from '../core/text'
 import { codexRolloutAdapter } from './codex-rollout'
 
 const fixtureDir = join(dirname(fileURLToPath(import.meta.url)), '../fixtures')
@@ -104,11 +105,14 @@ describe('codexRolloutAdapter.parse', () => {
       'thinking',
       'assistant',
     ])
+    expect(session.events[1]?.category).toBe('user')
+    expect(session.events[1]?.conversationItem?.id).toBe('conv-2-user')
     expect(session.events[2]?.category).toBe('thinking')
-    expect(session.conversationItems[0]?.preview).toContain('Archive tracked files')
+    expect(session.conversationItems[1]?.block?.text).toContain('Assess archive risk')
+    expect(session.events[1]?.preview).toContain('Archive tracked files')
   })
 
-  it('links function_call and function_call_output by call id', () => {
+  it('links function_call and function_call_output by tool call id', () => {
     const callId = 'call_rdg6jvibCi1HZNzPAIISkZC9'
     const session = codexRolloutAdapter.parse(
       [
@@ -149,12 +153,44 @@ describe('codexRolloutAdapter.parse', () => {
     const toolCall = session.conversationItems.find((item) => item.role === 'tool_call')
     const toolResult = session.conversationItems.find((item) => item.role === 'tool_result')
 
-    expect(toolCall?.toolCallId).toBe(callId)
-    expect(toolCall?.blocks?.[0]?.toolName).toBe('exec_command')
-    expect(toolResult?.toolCallId).toBe(callId)
-    expect(toolResult?.preview).toContain('file.txt')
+    expect(toolCall?.block?.toolCallId).toBe(callId)
+    expect(toolCall?.block?.toolName).toBe('exec_command')
+    expect(toolCall?.block?.status).toBe('pending')
+    expect(toolResult?.block?.toolCallId).toBe(callId)
+    expect(toolResult?.block?.status).toBe('completed')
+    expect(toolResult?.block?.text).toContain('file.txt')
     expect(session.events[1]?.label).toBe('tool_use exec_command')
+    expect(session.events[1]?.conversationItem?.id).toBe('conv-2-tool-call')
     expect(session.events[2]?.category).toBe('tool')
+  })
+
+  it('truncates very large reasoning blocks at parse time', () => {
+    const longReasoning = 'z'.repeat(BLOCK_TEXT_LIMIT + 500)
+    const session = codexRolloutAdapter.parse(
+      [
+        line({
+          timestamp: '2026-06-06T13:44:06.581Z',
+          type: 'event_msg',
+          payload: { type: 'task_started', turn_id: 'turn-1' },
+        }),
+        line(
+          {
+            timestamp: '2026-06-06T13:44:12.824Z',
+            type: 'response_item',
+            payload: {
+              type: 'reasoning',
+              summary: [{ text: longReasoning }],
+            },
+          },
+          2,
+        ),
+      ],
+      'reasoning.jsonl',
+    )
+
+    const thinking = session.conversationItems.find((item) => item.role === 'thinking')
+    expect(thinking?.block?.text.endsWith('… [truncated]')).toBe(true)
+    expect(thinking?.block?.text.length).toBeLessThan(longReasoning.length)
   })
 
   it('parses a real rollout file with custom tool calls when available locally', () => {

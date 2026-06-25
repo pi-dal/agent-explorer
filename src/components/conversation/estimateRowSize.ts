@@ -17,7 +17,8 @@ export function estimateRowSize(
   switch (item.role) {
     case 'user':
     case 'assistant':
-      return Math.min(320, 72 + Math.ceil(item.preview.length / 48) * 20)
+      const text = item.block?.text ?? item.event.preview
+      return Math.min(320, 72 + Math.ceil(text?.length ?? 0 / 48) * 20)
     case 'thinking':
       return 44
     case 'tool_call':

@@ -70,7 +70,7 @@ describe('claudeTranscriptAdapter.parse', () => {
     ])
     expect(session.events).toHaveLength(2)
     expect(session.events[1]?.label).toBe('assistant (2 blocks)')
-    expect(session.conversationItems[1]?.preview).toContain('greet')
+    expect(session.conversationItems[1]?.block?.text).toContain('greet')
   })
 
   it('links tool_use and tool_result by tool call id', () => {
@@ -125,11 +125,53 @@ describe('claudeTranscriptAdapter.parse', () => {
     const toolCall = session.conversationItems.find((item) => item.role === 'tool_call')
     const toolResult = session.conversationItems.find((item) => item.role === 'tool_result')
 
-    expect(toolCall?.toolCallId).toBe(toolId)
-    expect(toolResult?.toolCallId).toBe(toolId)
-    expect(toolResult?.preview).toContain('file.txt')
+    expect(toolCall?.block?.toolCallId).toBe(toolId)
+    expect(toolResult?.block?.toolCallId).toBe(toolId)
+    expect(toolResult?.block?.text).toContain('file.txt')
     expect(session.events[2]?.category).toBe('tool')
     expect(session.events[2]?.label).toContain('tool_result')
+  })
+
+  it('extracts usage and model onto assistant timeline events', () => {
+    const session = claudeTranscriptAdapter.parse(
+      [
+        line({
+          type: 'user',
+          uuid: 'user-1',
+          message: { role: 'user', content: 'Hello' },
+        }),
+        line(
+          {
+            type: 'assistant',
+            uuid: 'asst-1',
+            message: {
+              model: 'claude-opus-4-7',
+              role: 'assistant',
+              content: [{ type: 'text', text: 'Hi' }],
+              usage: {
+                input_tokens: 6,
+                cache_creation_input_tokens: 30175,
+                cache_read_input_tokens: 25392,
+                output_tokens: 1042,
+              },
+            },
+          },
+          2,
+        ),
+      ],
+      'test.jsonl',
+    )
+
+    expect(session.events[1]?.usage).toEqual({
+      inputTokens: 6,
+      cacheCreationInputTokens: 30175,
+      cacheReadInputTokens: 25392,
+      outputTokens: 1042,
+    })
+    expect(session.events[1]?.model).toBe('claude-opus-4-7')
+    expect(session.events[1]?.uuid).toBe('asst-1')
+    expect(session.events[1]?.role).toBe('assistant')
+    expect(session.events[0]?.usage).toBeUndefined()
   })
 
   it('extracts requestId onto timeline events', () => {
@@ -186,8 +228,8 @@ describe('claudeTranscriptAdapter.parse', () => {
     )
 
     const thinking = session.conversationItems.find((item) => item.role === 'thinking')
-    expect(thinking?.blocks?.[0]?.text.endsWith('… [truncated]')).toBe(true)
-    expect(thinking?.blocks?.[0]?.text.length).toBeLessThan(longThinking.length)
+    expect(thinking?.block?.text.endsWith('… [truncated]')).toBe(true)
+    expect(thinking?.block?.text.length).toBeLessThan(longThinking.length)
   })
 })
 

@@ -16,7 +16,7 @@ interface TimelineItemProps {
   event: TimelineEvent
   selected: boolean
   requestHighlighted?: boolean
-  onSelect: () => void
+  onSelect: (event: TimelineEvent) => void
   onKeyDown?: (event: KeyboardEvent<HTMLButtonElement>) => void
 }
 
@@ -33,7 +33,7 @@ export function TimelineItem({
       role="option"
       id={`timeline-event-${event.id}`}
       aria-selected={selected}
-      onClick={onSelect}
+      onClick={() => { onSelect(event) }}
       onKeyDown={onKeyDown}
       className={`flex h-full w-full min-h-0 shrink-0 items-center gap-2 overflow-hidden border-l-2 px-2 text-left text-xs ${
         selected

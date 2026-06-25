@@ -8,7 +8,7 @@ import { useRowResize } from './useRowResize'
 interface ThinkingBlockProps {
   item: ConversationListItem
   selected: boolean
-  onSelect: () => void
+  onSelect: (item: ConversationListItem) => void
   onLayoutChange?: () => void
 }
 
@@ -19,7 +19,7 @@ export function ThinkingBlock({
   onLayoutChange,
 }: ThinkingBlockProps) {
   const [expanded, setExpanded] = useState(false)
-  const text = item.blocks?.[0]?.text ?? item.preview
+  const text = item.block?.text ?? item.event.preview
 
   useRowResize(expanded, onLayoutChange)
 
@@ -28,7 +28,7 @@ export function ThinkingBlock({
   }
 
   return (
-    <div className="px-4 py-2" onClick={onSelect}>
+    <div className="px-4 py-2" onClick={() => { onSelect(item) }}>
       <div
         className={`max-w-3xl rounded-lg ${
           expanded ? 'w-full' : 'inline-flex w-fit max-w-full'
@@ -48,11 +48,6 @@ export function ThinkingBlock({
         >
           <ChevronToggle expanded={expanded} className={textFaint} />
           <span className={`text-xs font-medium ${textFaint}`}>Thinking</span>
-          {!expanded && (
-            <span className={`min-w-0 flex-1 truncate text-xs italic ${textFaint}`}>
-              {item.preview}
-            </span>
-          )}
         </button>
         {expanded && (
           <ExpandablePre

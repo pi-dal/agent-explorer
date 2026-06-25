@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import {
   accentTabActive,
   accentTabInactive,
@@ -9,24 +9,43 @@ import { useSessionStore } from '../../store/sessionStore'
 import { CollapsibleJson } from './CollapsibleJson'
 import { EventSummary } from './EventSummary'
 import { SessionMetaPanel } from './SessionMetaPanel'
+import { UsagePanel } from './UsagePanel'
 
-type DetailTab = 'session' | 'summary' | 'raw'
+type DetailTab = 'session' | 'summary' | 'usage' | 'raw'
 
 export function DetailPanel() {
   const session = useSessionStore((s) => s.session)
   const selection = useSessionStore((s) => s.selection)
+  const [lastSelectedEventId, setLastSelectedEventId] = useState<string | undefined>(undefined)
   const [tab, setTab] = useState<DetailTab>('session')
-  const hadSelectionRef = useRef(false)
+
+  const selectedEventId = selection?.event?.id
+  const hasEvent = !!(selection?.event)
+  const hasUsage = !!(selection?.event?.usage)
+
+  // FIXME: we don't need these `useEffect` hooks maybe.
+  useEffect(() => {
+    setLastSelectedEventId(selectedEventId)
+    if (hasEvent) {
+      if (tab === 'session' && lastSelectedEventId !== selectedEventId) {
+        setTab('summary');
+      }
+    } else {
+      if (tab === 'summary' || tab === 'raw') {
+        setTab('session')
+      }
+    }
+  }, [lastSelectedEventId, setLastSelectedEventId, tab, selectedEventId, hasEvent])
 
   useEffect(() => {
-    if (selection) {
-      if (!hadSelectionRef.current) setTab('summary')
-      hadSelectionRef.current = true
-      return
+    if (tab === 'usage' && !hasUsage) {
+      if (hasEvent) {
+        setTab('summary')
+      } else {
+        setTab('session')
+      }
     }
-    hadSelectionRef.current = false
-    setTab('session')
-  }, [selection])
+  }, [tab, hasEvent, hasUsage])
 
   if (!session) {
     return (
@@ -45,22 +64,30 @@ export function DetailPanel() {
         <TabButton
           active={tab === 'summary'}
           onClick={() => setTab('summary')}
-          disabled={!selection}
+          disabled={!hasEvent}
         >
           Summary
         </TabButton>
         <TabButton
+          active={tab === 'usage'}
+          onClick={() => setTab('usage')}
+          disabled={!hasUsage}
+        >
+          Usage
+        </TabButton>
+        <TabButton
           active={tab === 'raw'}
           onClick={() => setTab('raw')}
-          disabled={!selection}
+          disabled={!hasEvent}
         >
           Raw JSON
         </TabButton>
       </div>
       <div className="flex-1 overflow-auto p-3 bg-surface">
         {tab === 'session' && <SessionMetaPanel session={session} />}
-        {tab === 'summary' && selection && <EventSummary selection={selection} />}
-        {tab === 'raw' && selection && <CollapsibleJson value={selection.raw} />}
+        {tab === 'summary' && hasEvent && <EventSummary selection={selection} />}
+        {tab === 'usage' && hasUsage && <UsagePanel selection={selection} />}
+        {tab === 'raw' && selection?.event && <CollapsibleJson value={selection.event.raw} />}
       </div>
     </div>
   )

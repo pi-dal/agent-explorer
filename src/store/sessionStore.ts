@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { detectAndParse } from '../core/registry'
-import type { ExplorerSession, Selection } from '../core/types'
+import type { ExplorerSession, TimelineEvent, ConversationListItem, Selection } from '../core/types'
 import { useSettingsStore } from './settingsStore'
 
 type Theme = 'light' | 'dark' | 'system'
@@ -15,8 +15,8 @@ interface SessionState {
   loadText: (text: string, fileName: string) => void
   loadSample: () => Promise<void>
   setSelection: (selection: Selection | null) => void
-  selectTimelineEvent: (eventId: string) => void
-  selectConversationItem: (itemId: string) => void
+  selectTimelineEvent: (event: TimelineEvent) => void
+  selectConversationItem: (item: ConversationListItem) => void
   setTheme: (theme: Theme) => void
   clearSession: () => void
 }
@@ -75,36 +75,27 @@ export const useSessionStore = create<SessionState>()(
 
       setSelection: (selection) => set({ selection }),
 
-      selectTimelineEvent: (eventId) => {
-        const event = get().session?.events.find((e) => e.id === eventId)
+      selectTimelineEvent: (event) => {
         if (!event) return
         const syncSelection = useSettingsStore.getState().syncSelection
-        set({
-          selection: {
-            source: 'timeline',
-            eventId,
-            conversationItemId: syncSelection ? event.conversationItemId : undefined,
-            lineIndex: event.lineIndex,
-            raw: event.raw,
-          },
+        set((prev) => {
+          const conversationItem = syncSelection
+            ? event.conversationItem
+            : prev.selection?.conversationItem
+          return {
+            selection: { source: 'timeline', event, conversationItem }
+          }
         })
       },
 
-      selectConversationItem: (itemId) => {
-        const item = get().session?.conversationItems.find((i) => i.id === itemId)
+      selectConversationItem: (item) => {
         if (!item) return
         const syncSelection = useSettingsStore.getState().syncSelection
-        const linkedEventId = item.linkedEventIds[0]
-        set({
-          selection: {
-            source: 'conversation',
-            conversationItemId: itemId,
-            eventId: syncSelection ? linkedEventId : undefined,
-            lineIndex: syncSelection
-              ? get().session?.events.find((e) => e.id === linkedEventId)?.lineIndex
-              : undefined,
-            raw: item.raw,
-          },
+        set((prev) => {
+          const event = syncSelection ? item.event : prev.selection?.event
+          return {
+            selection: { source: 'conversation', event, conversationItem: item },
+          }
         })
       },
 

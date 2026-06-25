@@ -22,16 +22,16 @@ export function TimelinePanel() {
   const timelineCategoryFilter = useSettingsStore((s) => s.timelineCategoryFilter)
   const hideSystem = useSettingsStore((s) => s.hideSystem)
   const hideToolCalls = useSettingsStore((s) => s.hideToolCalls)
-  const syncSelection = useSettingsStore((s) => s.syncSelection)
   const highlightSameRequest = useSettingsStore((s) => s.highlightSameRequest)
   const parentRef = useRef<HTMLDivElement>(null)
+  const selectedId = selection?.event?.id
 
   const allEvents = session?.events ?? EMPTY_EVENTS
 
   const activeRequestId = useMemo(() => {
-    if (!highlightSameRequest || !selection?.eventId) return undefined
-    return allEvents.find((event) => event.id === selection.eventId)?.requestId
-  }, [allEvents, highlightSameRequest, selection?.eventId])
+    if (!highlightSameRequest || !selection) return undefined
+    return selection.event?.requestId
+  }, [highlightSameRequest, selection])
   const events = useMemo(
     () =>
       filterTimelineEvents(allEvents, {
@@ -63,7 +63,7 @@ export function TimelinePanel() {
   const navigateSelection = useCallback(
     (direction: -1 | 1) => {
       if (events.length === 0) return
-      const currentIndex = findTimelineEventIndex(events, selection?.eventId)
+      const currentIndex = findTimelineEventIndex(events, selectedId)
       const nextIndex = resolveTimelineNavigationIndex(
         events.length,
         currentIndex,
@@ -72,10 +72,10 @@ export function TimelinePanel() {
       if (nextIndex === null || nextIndex === currentIndex) return
       const event = events[nextIndex]
       if (!event) return
-      selectTimelineEvent(event.id)
+      selectTimelineEvent(event)
       scrollToEventIndex(nextIndex)
     },
-    [events, selection?.eventId, selectTimelineEvent, scrollToEventIndex],
+    [events, selectedId, selectTimelineEvent, scrollToEventIndex],
   )
 
   const handleTimelineKeyDown = useCallback(
@@ -92,17 +92,12 @@ export function TimelinePanel() {
   )
 
   useEffect(() => {
-    if (
-      !syncSelection ||
-      selection?.source !== 'conversation' ||
-      !selection.eventId ||
-      !parentRef.current
-    ) {
+    if (selection?.source === 'timeline') {
       return
     }
-    const index = events.findIndex((e) => e.id === selection.eventId)
-    if (index >= 0) virtualizer.scrollToIndex(index, { align: 'center' })
-  }, [syncSelection, selection?.source, selection?.eventId, events, virtualizer])
+    const index = events.findIndex((e) => e.id === selectedId)
+    if (index >= 0) virtualizer.scrollToIndex(index, { align: 'center', behavior: 'smooth' })
+  }, [selection?.source, selectedId, events, virtualizer])
 
   if (!session) {
     return (
@@ -125,7 +120,7 @@ export function TimelinePanel() {
         role="listbox"
         aria-label="Timeline events"
         aria-activedescendant={
-          selection?.eventId ? `timeline-event-${selection.eventId}` : undefined
+          selectedId ? `timeline-event-${selectedId}` : undefined
         }
         onKeyDown={handleTimelineKeyDown}
         className="flex-1 overflow-auto outline-none bg-surface focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent/30"
@@ -153,13 +148,13 @@ export function TimelinePanel() {
                 >
                   <TimelineItem
                     event={event}
-                    selected={selection?.eventId === event.id}
+                    selected={selectedId === event.id}
                     requestHighlighted={
                       !!activeRequestId &&
                       event.requestId === activeRequestId &&
-                      selection?.eventId !== event.id
+                      selectedId !== event.id
                     }
-                    onSelect={() => selectTimelineEvent(event.id)}
+                    onSelect={selectTimelineEvent}
                     onKeyDown={handleTimelineKeyDown}
                   />
                 </div>

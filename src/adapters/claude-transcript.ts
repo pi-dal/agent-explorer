@@ -11,6 +11,7 @@ import type {
   ExplorerSession,
   ParsedLine,
   TimelineEvent,
+  TokenUsage,
 } from '../core/types'
 
 function parseTimestamp(value: unknown): number | undefined {
@@ -69,13 +70,15 @@ function extractContentBlocks(record: Record<string, unknown>): ContentBlock[] {
       blocks.push({ type: 'text', text: truncateBlockText(part.text) })
     } else if (part.type === 'thinking' && typeof part.thinking === 'string') {
       blocks.push({ type: 'thinking', text: truncateBlockText(part.thinking) })
-    } else if (part.type === 'tool_use' && typeof part.name === 'string') {
+    } else if (part.type === 'tool_use' && typeof part.name === 'string' && typeof part.id === 'string') {
       const input = isRecord(part.input) ? part.input : {}
       blocks.push({
         type: 'tool_use',
         text: truncateBlockText(JSON.stringify(input, null, 2)),
         toolName: part.name,
         toolInput: input,
+        toolCallId: part.id,
+        status: 'pending',
       })
     }
   }
@@ -144,6 +147,72 @@ function timelinePreview(type: string, record: Record<string, unknown>): string 
   return ''
 }
 
+function readTokenCount(usage: Record<string, unknown>, key: string): number | undefined {
+  const value = usage[key]
+  return typeof value === 'number' && Number.isFinite(value) ? value : undefined
+}
+
+export function parseClaudeTokenUsage(raw: unknown): TokenUsage | undefined {
+  if (!isRecord(raw) || !isRecord(raw.message)) return undefined
+
+  const usage = raw.message.usage
+  if (!isRecord(usage)) return undefined
+
+  const inputTokens = readTokenCount(usage, 'input_tokens')
+  const outputTokens = readTokenCount(usage, 'output_tokens')
+  const cacheCreationInputTokens = readTokenCount(usage, 'cache_creation_input_tokens')
+  const cacheReadInputTokens = readTokenCount(usage, 'cache_read_input_tokens')
+
+  if (
+    inputTokens === undefined &&
+    outputTokens === undefined &&
+    cacheCreationInputTokens === undefined &&
+    cacheReadInputTokens === undefined
+  ) {
+    return undefined
+  }
+
+  return {
+    inputTokens: inputTokens ?? 0,
+    outputTokens: outputTokens ?? 0,
+    cacheCreationInputTokens: cacheCreationInputTokens ?? 0,
+    cacheReadInputTokens: cacheReadInputTokens ?? 0,
+  }
+}
+
+export function parseClaudeModel(raw: unknown): string | undefined {
+  if (!isRecord(raw) || !isRecord(raw.message)) return undefined
+  const model = raw.message.model
+  return typeof model === 'string' && model.length > 0 ? model : undefined
+}
+
+export function extractClaudeEventMeta(
+  raw: unknown,
+): Pick<
+  TimelineEvent,
+  'uuid' | 'sessionId' | 'cwd' | 'timestampLabel' | 'role' | 'stopReason'
+> {
+  const meta: Pick<
+    TimelineEvent,
+    'uuid' | 'sessionId' | 'cwd' | 'timestampLabel' | 'role' | 'stopReason'
+  > = {}
+
+  if (!isRecord(raw)) return meta
+
+  if (typeof raw.uuid === 'string') meta.uuid = raw.uuid
+  if (typeof raw.sessionId === 'string') meta.sessionId = raw.sessionId
+  if (typeof raw.cwd === 'string') meta.cwd = raw.cwd
+  if (typeof raw.timestamp === 'string') meta.timestampLabel = raw.timestamp
+
+  const message = isRecord(raw.message) ? raw.message : undefined
+  if (message) {
+    if (typeof message.role === 'string') meta.role = message.role
+    if (typeof message.stop_reason === 'string') meta.stopReason = message.stop_reason
+  }
+
+  return meta
+}
+
 export const claudeTranscriptAdapter: SessionAdapter = {
   detect(samples: ParsedLine[]): number {
     if (samples.length === 0) return 0
@@ -190,7 +259,21 @@ export const claudeTranscriptAdapter: SessionAdapter = {
         turnSet.add(1)
       }
 
-      const linkedItemIds: string[] = []
+      let event: TimelineEvent = {
+        id: eventId,
+        lineIndex: line.lineIndex,
+        timestamp: parseTimestamp(record.timestamp),
+        category: timelineCategory(type, record),
+        kind: type,
+        label: timelineLabel(type, record),
+        preview: timelinePreview(type, record),
+        turnIndex,
+        requestId: getString(record, 'requestId'),
+        model: parseClaudeModel(record),
+        usage: parseClaudeTokenUsage(record),
+        ...extractClaudeEventMeta(record),
+        raw: record,
+      }
 
       if (type === 'user') {
         if (isToolResultUser(record)) {
@@ -203,31 +286,30 @@ export const claudeTranscriptAdapter: SessionAdapter = {
           const text = extractUserText(record)
 
           const itemId = `conv-${line.lineIndex}-tool-result`
-          conversationItems.push({
+          const item: ConversationListItem = {
             id: itemId,
-            turnIndex,
+            event,
             role: 'tool_result',
-            preview: truncatePreview(text || '(empty tool result)'),
-            blocks: text ? [{ type: 'text', text: truncateBlockText(text) }] : [],
-            toolCallId,
-            status: isError ? 'failed' : 'completed',
-            linkedEventIds: [eventId],
-            raw: record,
-          })
-          linkedItemIds.push(itemId)
+            block: text ? {
+              type: 'text',
+              text: truncateBlockText(text),
+              toolCallId,
+              status: isError ? 'failed' : 'completed',
+            } : undefined,
+          }
+          conversationItems.push(item)
+          event.conversationItem = item
         } else {
           const text = extractUserText(record)
           const itemId = `conv-${line.lineIndex}-user`
-          conversationItems.push({
+          const item: ConversationListItem = {
             id: itemId,
-            turnIndex,
+            event,
             role: 'user',
-            preview: truncatePreview(text),
-            blocks: text ? [{ type: 'text', text: truncateBlockText(text) }] : [],
-            linkedEventIds: [eventId],
-            raw: record,
-          })
-          linkedItemIds.push(itemId)
+            block: text ? { type: 'text', text: truncateBlockText(text) } : undefined,
+          }
+          conversationItems.push(item)
+          event.conversationItem = item
         }
       } else if (type === 'assistant') {
         const blocks = extractContentBlocks(record)
@@ -237,60 +319,30 @@ export const claudeTranscriptAdapter: SessionAdapter = {
 
         if (blocks.length === 0) {
           const itemId = `conv-${line.lineIndex}-assistant`
-          conversationItems.push({
+          const item: ConversationListItem = {
             id: itemId,
-            turnIndex,
+            event,
             role: 'assistant',
-            preview: '(empty assistant message)',
-            linkedEventIds: [eventId],
-            raw: record,
-          })
-          linkedItemIds.push(itemId)
+          };
+          conversationItems.push(item)
+          event.conversationItem = item;
         } else {
           blocks.forEach((block, blockIndex) => {
             const itemId = `conv-${line.lineIndex}-block-${blockIndex}`
             const role = blockToRole(block)
-            conversationItems.push({
+            const item: ConversationListItem = {
               id: itemId,
-              turnIndex,
+              event,
               role,
-              preview: blockPreview(block),
-              blocks: [block],
-              toolCallId:
-                block.type === 'tool_use' && isRecord(record.message)
-                  ? undefined
-                  : undefined,
-              status: block.type === 'tool_use' ? 'pending' : undefined,
-              linkedEventIds: [eventId],
-              raw: record,
-            })
-            linkedItemIds.push(itemId)
-
-            if (block.type === 'tool_use' && isRecord(record.message)) {
-              const content = record.message.content as unknown[]
-              const part = content?.[blockIndex] as Record<string, unknown> | undefined
-              if (part && typeof part.id === 'string') {
-                const item = conversationItems[conversationItems.length - 1]!
-                item.toolCallId = part.id
-              }
+              block,
             }
+            conversationItems.push(item)
+            event.conversationItem = item
           })
         }
       }
 
-      events.push({
-        id: eventId,
-        lineIndex: line.lineIndex,
-        timestamp: parseTimestamp(record.timestamp),
-        category: timelineCategory(type, record),
-        kind: type,
-        label: timelineLabel(type, record),
-        preview: timelinePreview(type, record),
-        turnIndex,
-        conversationItemId: linkedItemIds[0],
-        requestId: getString(record, 'requestId'),
-        raw: record,
-      })
+      events.push(event)
     }
 
     return {

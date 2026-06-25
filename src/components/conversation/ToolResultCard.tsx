@@ -17,7 +17,7 @@ interface ToolResultCardProps {
   item: ConversationListItem
   selected: boolean
   pairHighlighted: boolean
-  onSelect: () => void
+  onSelect: (item: ConversationListItem) => void
   onHoverStart?: () => void
   onHoverEnd?: () => void
   onLayoutChange?: () => void
@@ -33,9 +33,9 @@ export function ToolResultCard({
   onLayoutChange,
 }: ToolResultCardProps) {
   const [expanded, setExpanded] = useState(false)
-  const isFailed = item.status === 'failed'
-  const text = item.blocks?.[0]?.text ?? item.preview
-  const shortId = shortToolId(item.toolCallId)
+  const isFailed = item?.block?.status === 'failed'
+  const text = item.block?.text ?? item.event.preview
+  const shortId = shortToolId(item?.block?.toolCallId)
 
   useRowResize(expanded, onLayoutChange)
 
@@ -53,7 +53,7 @@ export function ToolResultCard({
         className={`${surfaceCard} ${
           expanded ? 'max-w-2xl' : 'inline-flex w-fit max-w-full'
         } ${toolCardBorderClass({ selected, pairHighlighted, isFailed })}`}
-        onClick={onSelect}
+        onClick={() => { onSelect(item) }}
       >
         <button
           type="button"

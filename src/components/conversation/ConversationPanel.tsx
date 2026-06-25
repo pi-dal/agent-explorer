@@ -40,7 +40,6 @@ export function ConversationPanel() {
   const hideSystem = useSettingsStore((s) => s.hideSystem)
   const hideThinking = useSettingsStore((s) => s.hideThinking)
   const hideToolCalls = useSettingsStore((s) => s.hideToolCalls)
-  const syncSelection = useSettingsStore((s) => s.syncSelection)
   const items = useMemo(
     () =>
       filterConversationItems(allItems, {
@@ -51,7 +50,7 @@ export function ConversationPanel() {
       }),
     [allItems, searchQuery, hideSystem, hideThinking, hideToolCalls],
   )
-  const selectedItemId = selection?.conversationItemId
+  const selectedItemId = selection?.conversationItem?.id
 
   const activeToolCallId = useMemo(
     () => resolveActiveToolCallId(items, hoveredItemId, selectedItemId),
@@ -62,9 +61,10 @@ export function ConversationPanel() {
     const result: VirtualRow[] = []
     let lastTurn = -1
     items.forEach((item, itemIndex) => {
-      if (item.turnIndex !== lastTurn) {
-        result.push({ kind: 'turn', turnIndex: item.turnIndex, key: `turn-${item.turnIndex}` })
-        lastTurn = item.turnIndex
+      const turnIndex = item.event?.turnIndex ?? 0
+      if (turnIndex !== lastTurn) {
+        result.push({ kind: 'turn', turnIndex, key: `turn-${turnIndex}` })
+        lastTurn = turnIndex
       }
       result.push({ kind: 'item', key: item.id, itemIndex })
     })
@@ -92,20 +92,15 @@ export function ConversationPanel() {
   )
 
   useEffect(() => {
-    if (
-      !syncSelection ||
-      selection?.source !== 'timeline' ||
-      !selection.conversationItemId ||
-      !parentRef.current
-    ) {
+    if (selection?.source === 'conversation') {
       return
     }
+    if (!selectedItemId) return
     const index = rows.findIndex(
-      (row) =>
-        row.kind === 'item' && items[row.itemIndex]?.id === selection.conversationItemId,
+      (row) => row.kind === 'item' && items[row.itemIndex]?.id === selectedItemId,
     )
-    if (index >= 0) virtualizer.scrollToIndex(index, { align: 'center' })
-  }, [syncSelection, selection?.source, selection?.conversationItemId, rows, items, virtualizer])
+    if (index >= 0) virtualizer.scrollToIndex(index, { align: 'start', behavior: 'smooth' })
+  }, [selection, selectedItemId, rows, items, virtualizer])
 
   if (!session) {
     return (
@@ -180,7 +175,7 @@ export function ConversationPanel() {
                       hoveredItemId,
                       selectedItemId,
                     )}
-                    onSelect={() => selectConversationItem(items[row.itemIndex]!.id)}
+                    onSelect={selectConversationItem}
                     onHoverStart={
                       items[row.itemIndex]!.role === 'tool_call' ||
                       items[row.itemIndex]!.role === 'tool_result'

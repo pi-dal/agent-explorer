@@ -40,9 +40,17 @@ function timelineSearchText(event: TimelineEvent): string {
   ].join(' ')
 }
 
-function conversationSearchText(item: ConversationListItem): string {
-  const toolName = item.blocks?.find((block) => block.toolName)?.toolName ?? ''
-  return [item.role, item.preview, toolName, String(item.turnIndex)].join(' ')
+function conversationSearchText(
+  item: ConversationListItem,
+): string {
+  const event = item.event
+  return [
+    item.role,
+    item.block?.text ?? '',
+    item.block?.toolName ?? '',
+    event?.preview ?? '',
+    event?.turnIndex !== undefined ? String(event.turnIndex) : '',
+  ].join(' ')
 }
 
 function isSystemTimelineEvent(event: TimelineEvent): boolean {

@@ -29,11 +29,20 @@ export interface ParseWarning {
   message: string
 }
 
+export interface TokenUsage {
+  inputTokens: number
+  cacheCreationInputTokens: number
+  cacheReadInputTokens: number
+  outputTokens: number
+}
+
 export interface ContentBlock {
   type: 'text' | 'thinking' | 'tool_use'
   text: string
   toolName?: string
   toolInput?: Record<string, unknown>
+  toolCallId?: string
+  status?: 'pending' | 'completed' | 'failed'
 }
 
 export interface TimelineEvent {
@@ -43,23 +52,26 @@ export interface TimelineEvent {
   category: EventCategory
   kind: string
   label: string
-  preview?: string
+  preview: string
   turnIndex?: number
-  conversationItemId?: string
   requestId?: string
+  model?: string
+  usage?: TokenUsage
+  uuid?: string
+  sessionId?: string
+  cwd?: string
+  timestampLabel?: string
+  role?: string
+  stopReason?: string
+  conversationItem?: ConversationListItem
   raw: unknown
 }
 
 export interface ConversationListItem {
   id: string
-  turnIndex: number
+  event: TimelineEvent
   role: ConversationRole
-  preview: string
-  blocks?: ContentBlock[]
-  toolCallId?: string
-  status?: 'pending' | 'completed' | 'failed'
-  linkedEventIds: string[]
-  raw: unknown
+  block?: ContentBlock
 }
 
 export interface ExplorerSession {
@@ -81,8 +93,6 @@ export type SelectionSource = 'timeline' | 'conversation'
 
 export interface Selection {
   source: SelectionSource
-  eventId?: string
-  conversationItemId?: string
-  raw: unknown
-  lineIndex?: number
+  event?: TimelineEvent
+  conversationItem?: ConversationListItem
 }

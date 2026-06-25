@@ -8,7 +8,7 @@ interface ConversationMessageProps {
   item: ConversationListItem
   selected: boolean
   pairHighlighted: boolean
-  onSelect: () => void
+  onSelect: (item: ConversationListItem) => void
   onHoverStart?: () => void
   onHoverEnd?: () => void
   onLayoutChange?: () => void

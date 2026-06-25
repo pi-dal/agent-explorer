@@ -8,19 +8,18 @@ const baseEvent = (overrides: Partial<TimelineEvent>): TimelineEvent => ({
   category: 'user',
   kind: 'user',
   label: 'user',
+  preview: '',
   raw: {},
   ...overrides,
 })
 
-const baseItem = (overrides: Partial<ConversationListItem>): ConversationListItem => ({
-  id: 'item-1',
-  turnIndex: 1,
-  role: 'user',
-  preview: 'hello',
-  linkedEventIds: ['line-1'],
-  raw: {},
-  ...overrides,
-})
+function conversationItem(
+  event: TimelineEvent,
+  overrides: Pick<ConversationListItem, 'id' | 'role'> &
+    Partial<Pick<ConversationListItem, 'block'>>,
+): ConversationListItem {
+  return { event, ...overrides }
+}
 
 describe('filterTimelineEvents', () => {
   const events = [
@@ -31,6 +30,7 @@ describe('filterTimelineEvents', () => {
       category: 'meta',
       kind: 'file-history-snapshot',
       label: 'file-history-snapshot',
+      preview: '',
     }),
     baseEvent({
       id: 'e3',
@@ -94,12 +94,62 @@ describe('filterTimelineEvents', () => {
 })
 
 describe('filterConversationItems', () => {
+  const userEvent = baseEvent({ id: 'line-1', preview: 'Create folder', turnIndex: 1 })
+  const thinkingEvent = baseEvent({
+    id: 'line-2',
+    lineIndex: 2,
+    category: 'thinking',
+    kind: 'assistant',
+    label: 'thinking',
+    preview: 'planning next step',
+    turnIndex: 1,
+  })
+  const systemEvent = baseEvent({
+    id: 'line-3',
+    lineIndex: 3,
+    category: 'system',
+    kind: 'message',
+    label: 'system',
+    preview: 'system notice',
+    turnIndex: 1,
+  })
+  const toolCallEvent = baseEvent({
+    id: 'line-4',
+    lineIndex: 4,
+    category: 'tool',
+    kind: 'tool_use',
+    label: 'tool_use Bash',
+    preview: 'Bash: ls',
+    turnIndex: 1,
+  })
+  const toolResultEvent = baseEvent({
+    id: 'line-5',
+    lineIndex: 5,
+    category: 'tool',
+    kind: 'tool_result',
+    label: 'tool_result',
+    preview: 'done',
+    turnIndex: 1,
+  })
+
   const items = [
-    baseItem({ id: 'i1', role: 'user', preview: 'Create folder' }),
-    baseItem({ id: 'i2', role: 'thinking', preview: 'planning next step' }),
-    baseItem({ id: 'i3', role: 'system', preview: 'system notice' }),
-    baseItem({ id: 'i4', role: 'tool_call', preview: 'Bash: ls' }),
-    baseItem({ id: 'i5', role: 'tool_result', preview: 'done' }),
+    conversationItem(userEvent, { id: 'i1', role: 'user' }),
+    conversationItem(thinkingEvent, {
+      id: 'i2',
+      role: 'thinking',
+      block: { type: 'thinking', text: 'planning next step' },
+    }),
+    conversationItem(systemEvent, { id: 'i3', role: 'system' }),
+    conversationItem(toolCallEvent, {
+      id: 'i4',
+      role: 'tool_call',
+      block: { type: 'tool_use', text: 'ls', toolName: 'Bash' },
+    }),
+    conversationItem(toolResultEvent, {
+      id: 'i5',
+      role: 'tool_result',
+      block: { type: 'text', text: 'done' },
+    }),
   ]
 
   it('filters by search query', () => {

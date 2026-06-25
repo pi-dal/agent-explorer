@@ -1,6 +1,7 @@
 import type { SessionAdapter } from './types'
 import { truncateBlockText, truncatePreview } from '../core/text'
 import type {
+  ContentBlock,
   ConversationListItem,
   ConversationRole,
   EventCategory,
@@ -9,15 +10,6 @@ import type {
   TimelineEvent,
 } from '../core/types'
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null
-}
-
-function getString(record: Record<string, unknown>, key: string): string | undefined {
-  const value = record[key]
-  return typeof value === 'string' ? value : undefined
-}
-
 function parseTimestamp(value: unknown): number | undefined {
   if (typeof value === 'string') {
     const ms = Date.parse(value)
@@ -25,6 +17,15 @@ function parseTimestamp(value: unknown): number | undefined {
   }
   if (typeof value === 'number') return value
   return undefined
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
+}
+
+function getString(record: Record<string, unknown>, key: string): string | undefined {
+  const value = record[key]
+  return typeof value === 'string' ? value : undefined
 }
 
 function extractMessageText(content: unknown): string {
@@ -44,6 +45,16 @@ function extractMessageText(content: unknown): string {
     .join('\n')
 }
 
+function extractReasoningText(payload: Record<string, unknown>): string {
+  const summary = Array.isArray(payload.summary)
+    ? payload.summary
+        .map((entry) => (isRecord(entry) ? getString(entry, 'text') ?? '' : ''))
+        .filter(Boolean)
+        .join('\n')
+    : ''
+  return summary || '(encrypted reasoning)'
+}
+
 function shortCallId(callId: string | undefined): string | undefined {
   if (!callId) return undefined
   return callId.length > 12 ? callId.slice(0, 12) : callId
@@ -61,27 +72,6 @@ function messageRoleToCategory(role: string | undefined): EventCategory {
   if (role === 'user') return 'user'
   if (role === 'assistant') return 'assistant'
   return 'unknown'
-}
-
-function eventMsgCategory(kind: string): EventCategory {
-  if (kind === 'user_message') return 'user'
-  if (kind === 'agent_message') return 'assistant'
-  if (kind === 'task_started' || kind === 'task_complete' || kind === 'token_count') {
-    return 'meta'
-  }
-  return 'unknown'
-}
-
-function eventMsgLabel(kind: string): string {
-  return kind
-}
-
-function eventMsgPreview(payload: Record<string, unknown>): string {
-  const message = getString(payload, 'message')
-  if (message) return truncatePreview(message)
-  const turnId = getString(payload, 'turn_id')
-  if (turnId) return truncatePreview(turnId)
-  return ''
 }
 
 function parseToolArguments(argumentsJson: string | undefined): Record<string, unknown> {
@@ -114,6 +104,179 @@ function isFailedToolOutput(payload: Record<string, unknown>): boolean {
     return false
   }
   return getString(payload, 'status') === 'failed'
+}
+
+function responseItemType(payload: Record<string, unknown>): string {
+  return getString(payload, 'type') ?? 'response_item'
+}
+
+function extractResponseItemBlock(
+  payload: Record<string, unknown>,
+  itemType: string,
+): ContentBlock | undefined {
+  if (itemType === 'message') {
+    const text = extractMessageText(payload.content)
+    return text ? { type: 'text', text: truncateBlockText(text) } : undefined
+  }
+  if (itemType === 'reasoning') {
+    return { type: 'thinking', text: truncateBlockText(extractReasoningText(payload)) }
+  }
+  if (itemType === 'function_call' || itemType === 'custom_tool_call') {
+    const toolName = getString(payload, 'name') ?? 'tool'
+    const callId = getString(payload, 'call_id')
+    const argsSource =
+      itemType === 'function_call'
+        ? getString(payload, 'arguments')
+        : getString(payload, 'input')
+    const toolInput = parseToolArguments(argsSource)
+    const inputText = truncateBlockText(
+      argsSource ? toolOutputText(argsSource) : JSON.stringify(toolInput, null, 2),
+    )
+    return {
+      type: 'tool_use',
+      text: inputText,
+      toolName,
+      toolInput,
+      toolCallId: callId,
+      status: 'pending',
+    }
+  }
+  if (itemType === 'function_call_output' || itemType === 'custom_tool_call_output') {
+    const callId = getString(payload, 'call_id')
+    const text = truncateBlockText(toolOutputText(payload.output))
+    const failed = isFailedToolOutput(payload)
+    return text
+      ? {
+          type: 'text',
+          text,
+          toolCallId: callId,
+          status: failed ? 'failed' : 'completed',
+        }
+      : undefined
+  }
+  return undefined
+}
+
+function responseItemRole(itemType: string, role: string | undefined): ConversationRole {
+  if (itemType === 'message') return messageRoleToConversationRole(role)
+  if (itemType === 'reasoning') return 'thinking'
+  if (itemType === 'function_call' || itemType === 'custom_tool_call') return 'tool_call'
+  if (itemType === 'function_call_output' || itemType === 'custom_tool_call_output') {
+    return 'tool_result'
+  }
+  return 'system'
+}
+
+function responseItemId(lineIndex: number, itemType: string, role: string | undefined): string {
+  if (itemType === 'message') {
+    return `conv-${lineIndex}-${messageRoleToConversationRole(role)}`
+  }
+  if (itemType === 'reasoning') return `conv-${lineIndex}-thinking`
+  if (itemType === 'function_call' || itemType === 'custom_tool_call') {
+    return `conv-${lineIndex}-tool-call`
+  }
+  if (itemType === 'function_call_output' || itemType === 'custom_tool_call_output') {
+    return `conv-${lineIndex}-tool-result`
+  }
+  return `conv-${lineIndex}-response-item`
+}
+
+function timelineKind(envelopeType: string, payload: Record<string, unknown>): string {
+  if (envelopeType === 'event_msg') return getString(payload, 'type') ?? 'event_msg'
+  if (envelopeType === 'response_item') return responseItemType(payload)
+  return envelopeType
+}
+
+function timelineCategory(
+  envelopeType: string,
+  payload: Record<string, unknown>,
+): EventCategory {
+  if (envelopeType === 'session_meta' || envelopeType === 'turn_context') return 'meta'
+  if (envelopeType === 'event_msg') {
+    const kind = getString(payload, 'type') ?? 'event_msg'
+    if (kind === 'user_message') return 'user'
+    if (kind === 'agent_message') return 'assistant'
+    if (kind === 'task_started' || kind === 'task_complete' || kind === 'token_count') {
+      return 'meta'
+    }
+    return 'unknown'
+  }
+  if (envelopeType === 'response_item') {
+    const itemType = responseItemType(payload)
+    if (itemType === 'message') return messageRoleToCategory(getString(payload, 'role'))
+    if (itemType === 'reasoning') return 'thinking'
+    if (
+      itemType === 'function_call' ||
+      itemType === 'custom_tool_call' ||
+      itemType === 'function_call_output' ||
+      itemType === 'custom_tool_call_output'
+    ) {
+      return 'tool'
+    }
+    return 'unknown'
+  }
+  return 'unknown'
+}
+
+function timelineLabel(envelopeType: string, payload: Record<string, unknown>): string {
+  if (envelopeType === 'session_meta') return 'session_meta'
+  if (envelopeType === 'turn_context') return 'turn_context'
+  if (envelopeType === 'event_msg') return getString(payload, 'type') ?? 'event_msg'
+  if (envelopeType === 'response_item') {
+    const itemType = responseItemType(payload)
+    if (itemType === 'message') return getString(payload, 'role') ?? 'message'
+    if (itemType === 'reasoning') return 'reasoning'
+    if (itemType === 'function_call' || itemType === 'custom_tool_call') {
+      const toolName = getString(payload, 'name') ?? 'tool'
+      return `tool_use ${toolName}`
+    }
+    if (itemType === 'function_call_output' || itemType === 'custom_tool_call_output') {
+      return `tool_result ${shortCallId(getString(payload, 'call_id')) ?? 'unknown'}`
+    }
+    return itemType
+  }
+  return envelopeType
+}
+
+function timelinePreview(
+  envelopeType: string,
+  payload: Record<string, unknown>,
+  sessionId?: string,
+  cwd?: string,
+): string {
+  if (envelopeType === 'session_meta') {
+    return truncatePreview(sessionId ?? cwd ?? '')
+  }
+  if (envelopeType === 'turn_context') {
+    return truncatePreview(
+      [getString(payload, 'model'), getString(payload, 'cwd')].filter(Boolean).join(' · '),
+    )
+  }
+  if (envelopeType === 'event_msg') {
+    const message = getString(payload, 'message')
+    if (message) return truncatePreview(message)
+    const turnId = getString(payload, 'turn_id')
+    if (turnId) return truncatePreview(turnId)
+    return ''
+  }
+  if (envelopeType === 'response_item') {
+    const itemType = responseItemType(payload)
+    if (itemType === 'message') {
+      return truncatePreview(extractMessageText(payload.content))
+    }
+    if (itemType === 'reasoning') {
+      return truncatePreview(extractReasoningText(payload))
+    }
+    if (itemType === 'function_call' || itemType === 'custom_tool_call') {
+      return truncatePreview(
+        getString(payload, 'arguments') ?? getString(payload, 'input') ?? '',
+      )
+    }
+    if (itemType === 'function_call_output' || itemType === 'custom_tool_call_output') {
+      return truncatePreview(toolOutputText(payload.output))
+    }
+  }
+  return ''
 }
 
 export const codexRolloutAdapter: SessionAdapter = {
@@ -171,8 +334,6 @@ export const codexRolloutAdapter: SessionAdapter = {
       if (!isRecord(payload)) continue
 
       const eventId = `line-${line.lineIndex}`
-      const timestamp = parseTimestamp(envelope.timestamp)
-      const linkedItemIds: string[] = []
 
       if (envelopeType === 'session_meta') {
         sessionId ??= getString(payload, 'id')
@@ -196,173 +357,45 @@ export const codexRolloutAdapter: SessionAdapter = {
       }
 
       const turnIndex = currentTurnIndex()
+      const itemType = envelopeType === 'response_item' ? responseItemType(payload) : undefined
+      const messageRole =
+        envelopeType === 'response_item' && itemType === 'message'
+          ? getString(payload, 'role')
+          : undefined
 
-      if (envelopeType === 'response_item') {
-        const itemType = getString(payload, 'type') ?? 'response_item'
-
-        if (itemType === 'message') {
-          const role = getString(payload, 'role')
-          const text = extractMessageText(payload.content)
-          const conversationRole = messageRoleToConversationRole(role)
-
-          const itemId = `conv-${line.lineIndex}-${conversationRole}`
-          conversationItems.push({
-            id: itemId,
-            turnIndex,
-            role: conversationRole,
-            preview: truncatePreview(text || `(${role ?? 'message'})`),
-            blocks: text ? [{ type: 'text', text: truncateBlockText(text) }] : [],
-            linkedEventIds: [eventId],
-            raw: envelope,
-          })
-          linkedItemIds.push(itemId)
-        } else if (itemType === 'reasoning') {
-          const summary = Array.isArray(payload.summary)
-            ? payload.summary
-                .map((entry) => (isRecord(entry) ? getString(entry, 'text') ?? '' : ''))
-                .filter(Boolean)
-                .join('\n')
-            : ''
-          const text = summary || '(encrypted reasoning)'
-
-          const itemId = `conv-${line.lineIndex}-thinking`
-          conversationItems.push({
-            id: itemId,
-            turnIndex,
-            role: 'thinking',
-            preview: truncatePreview(text),
-            blocks: [{ type: 'thinking', text: truncateBlockText(text) }],
-            linkedEventIds: [eventId],
-            raw: envelope,
-          })
-          linkedItemIds.push(itemId)
-        } else if (itemType === 'function_call' || itemType === 'custom_tool_call') {
-          const toolName = getString(payload, 'name') ?? 'tool'
-          const callId = getString(payload, 'call_id')
-          const argsSource =
-            itemType === 'function_call'
-              ? getString(payload, 'arguments')
-              : getString(payload, 'input')
-          const toolInput = parseToolArguments(argsSource)
-          const inputText = truncateBlockText(
-            argsSource ? toolOutputText(argsSource) : JSON.stringify(toolInput, null, 2),
-          )
-
-          const itemId = `conv-${line.lineIndex}-tool-call`
-          conversationItems.push({
-            id: itemId,
-            turnIndex,
-            role: 'tool_call',
-            preview: truncatePreview(`${toolName}: ${inputText}`),
-            blocks: [
-              {
-                type: 'tool_use',
-                text: inputText,
-                toolName,
-                toolInput,
-              },
-            ],
-            toolCallId: callId,
-            status: 'pending',
-            linkedEventIds: [eventId],
-            raw: envelope,
-          })
-          linkedItemIds.push(itemId)
-        } else if (
-          itemType === 'function_call_output' ||
-          itemType === 'custom_tool_call_output'
-        ) {
-          const callId = getString(payload, 'call_id')
-          const text = truncateBlockText(toolOutputText(payload.output))
-          const failed = isFailedToolOutput(payload)
-
-          const itemId = `conv-${line.lineIndex}-tool-result`
-          conversationItems.push({
-            id: itemId,
-            turnIndex,
-            role: 'tool_result',
-            preview: truncatePreview(text || '(empty tool result)'),
-            blocks: text ? [{ type: 'text', text }] : [],
-            toolCallId: callId,
-            status: failed ? 'failed' : 'completed',
-            linkedEventIds: [eventId],
-            raw: envelope,
-          })
-          linkedItemIds.push(itemId)
-        }
-      }
-
-      let category: EventCategory = 'unknown'
-      let kind = envelopeType
-      let label = envelopeType
-      let preview = ''
-
-      if (envelopeType === 'session_meta') {
-        category = 'meta'
-        label = 'session_meta'
-        preview = truncatePreview(sessionId ?? cwd ?? '')
-      } else if (envelopeType === 'turn_context') {
-        category = 'meta'
-        label = 'turn_context'
-        preview = truncatePreview(
-          [getString(payload, 'model'), getString(payload, 'cwd')].filter(Boolean).join(' · '),
-        )
-      } else if (envelopeType === 'event_msg') {
-        kind = getString(payload, 'type') ?? 'event_msg'
-        category = eventMsgCategory(kind)
-        label = eventMsgLabel(kind)
-        preview = eventMsgPreview(payload)
-      } else if (envelopeType === 'response_item') {
-        const itemType = getString(payload, 'type') ?? 'response_item'
-        kind = itemType
-
-        if (itemType === 'message') {
-          const role = getString(payload, 'role')
-          category = messageRoleToCategory(role)
-          label = role ?? 'message'
-          preview = truncatePreview(extractMessageText(payload.content))
-        } else if (itemType === 'reasoning') {
-          category = 'thinking'
-          label = 'reasoning'
-          preview = truncatePreview(
-            Array.isArray(payload.summary)
-              ? payload.summary
-                  .map((entry) => (isRecord(entry) ? getString(entry, 'text') ?? '' : ''))
-                  .filter(Boolean)
-                  .join(' ')
-              : '(encrypted reasoning)',
-          )
-        } else if (itemType === 'function_call' || itemType === 'custom_tool_call') {
-          category = 'tool'
-          const toolName = getString(payload, 'name') ?? 'tool'
-          label = `tool_use ${toolName}`
-          preview = truncatePreview(
-            getString(payload, 'arguments') ?? getString(payload, 'input') ?? '',
-          )
-        } else if (
-          itemType === 'function_call_output' ||
-          itemType === 'custom_tool_call_output'
-        ) {
-          category = 'tool'
-          label = `tool_result ${shortCallId(getString(payload, 'call_id')) ?? 'unknown'}`
-          preview = truncatePreview(toolOutputText(payload.output))
-        } else {
-          label = itemType
-        }
-      }
-
-      events.push({
+      let event: TimelineEvent = {
         id: eventId,
         lineIndex: line.lineIndex,
-        timestamp,
-        category,
-        kind,
-        label,
-        preview,
+        timestamp: parseTimestamp(envelope.timestamp),
+        category: timelineCategory(envelopeType, payload),
+        kind: timelineKind(envelopeType, payload),
+        label: timelineLabel(envelopeType, payload),
+        preview: timelinePreview(envelopeType, payload, sessionId, cwd),
         turnIndex,
-        conversationItemId: linkedItemIds[0],
+        model: envelopeType === 'turn_context' ? getString(payload, 'model') : model,
+        sessionId: envelopeType === 'session_meta' ? sessionId : undefined,
+        cwd:
+          envelopeType === 'session_meta' || envelopeType === 'turn_context'
+            ? getString(payload, 'cwd') ?? cwd
+            : undefined,
+        timestampLabel: getString(envelope, 'timestamp'),
+        role: messageRole,
         raw: envelope,
-      })
+      }
+
+      if (envelopeType === 'response_item' && itemType) {
+        const block = extractResponseItemBlock(payload, itemType)
+        const item: ConversationListItem = {
+          id: responseItemId(line.lineIndex, itemType, messageRole),
+          event,
+          role: responseItemRole(itemType, messageRole),
+          block,
+        }
+        conversationItems.push(item)
+        event.conversationItem = item
+      }
+
+      events.push(event)
     }
 
     const turnCount =
