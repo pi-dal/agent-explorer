@@ -1,12 +1,5 @@
-import { Upload } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
-import { textBody, textMuted } from '../../styles/uiClasses'
 import { useSessionStore } from '../../store/sessionStore'
-
-function isAcceptedSessionFile(file: File): boolean {
-  const lower = file.name.toLowerCase()
-  return lower.endsWith('.jsonl') || lower.endsWith('.json')
-}
 
 function dragContainsFiles(event: DragEvent): boolean {
   return event.dataTransfer?.types.includes('Files') ?? false
@@ -24,7 +17,6 @@ export function FileDropOverlay({ children }: { children: ReactNode }) {
 
   const loadFile = useCallback(
     (file: File) => {
-      if (!isAcceptedSessionFile(file)) return
       void file.text().then((text) => loadText(text, file.name))
     },
     [loadText],
@@ -83,19 +75,10 @@ export function FileDropOverlay({ children }: { children: ReactNode }) {
       {children}
       {active && (
         <div
-          className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center bg-background/75 backdrop-blur-sm"
+          className="pointer-events-none fixed inset-0 z-50 p-1 flex items-center justify-center bg-accent-border/10"
           aria-hidden={!active}
         >
-          <div className="rounded-2xl border-2 border-dashed border-accent-border bg-surface px-16 py-12 text-center shadow-lg">
-            <Upload
-              className="mx-auto mb-3 text-muted-foreground"
-              size={36}
-              strokeWidth={1.5}
-              aria-hidden
-            />
-            <p className={`text-lg font-medium ${textBody}`}>Drop file to open</p>
-            <p className={`mt-1 text-sm ${textMuted}`}>JSONL or JSON session logs</p>
-          </div>
+          <div className="rounded border-2 border-dashed border-accent-border w-full h-full" />
         </div>
       )}
     </>
