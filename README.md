@@ -1,34 +1,59 @@
-# React + TypeScript + Vite
+# Agent Explorer
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A browser-based explorer for agent session logs. Open a JSONL file and browse the full session across three linked views: a chronological timeline, a conversation view, and an event detail inspector.
 
-Currently, two official plugins are available:
+Parsing runs entirely in the browser — nothing is uploaded.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Features
 
-## React Compiler
+- **Flexible layout** — resizable timeline, conversation, and detail views
+- **Auto-detecting parsers** — automatically select the most sensible parser for the opened file
+- **Timeline** — filter by category, search, keyboard navigation (↑/↓), and optional highlighting of events that share the same request
+- **Conversation** — virtualized message list with user/assistant bubbles, thinking blocks, and expandable tool call / result cards with pair highlighting
+- **Detail panel** — session metadata, event summary, token usage & estimated cost, and raw JSON viewer
+- **Theme** — light / dark mode with system preference support
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+## Getting Started
 
-Note: This will impact Vite dev & build performances.
+### Prerequisites
 
-## Expanding the Oxlint configuration
+- [Node.js](https://nodejs.org/) 23+
+- [pnpm](https://pnpm.io/) 10+
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+### Install
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+pnpm install
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+### Development
+
+```bash
+pnpm dev
+```
+
+Open the URL printed by Vite (typically `http://localhost:5173`).
+
+### Other scripts
+
+```bash
+pnpm build    # production build
+pnpm preview  # preview the production build
+pnpm test     # run tests
+pnpm lint     # run oxlint
+```
+
+## Supported file formats
+
+The app inspects the first lines of a JSONL file and picks the best-matching adapter. If no format scores above the detection threshold, loading fails with an error.
+
+| Format | Description |
+|--------|-------------|
+| Claude Code transcript | Per-line `user` / `assistant` events with `message.content` blocks |
+| Codex rollout | Envelope records such as `session_meta`, `turn_context`, `event_msg`, and `response_item` |
+
+Support of more file formats is on the way.
+
+## License
+
+MIT — see [LICENSE](LICENSE).
