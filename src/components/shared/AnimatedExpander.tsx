@@ -35,24 +35,23 @@ export function AnimatedExpander(props: AnimatedExpanderProps) {
       return
     }
 
-    const previousHeight = element.style.height
-
     const to_visible = targetState === STATE_FINAL_VISIBLE
+    const previousHeight = element.style.height || (to_visible
+      ? '0px'
+      : `${element.getBoundingClientRect().height}px`
+    )
+
     if (to_visible) {
       element.style.height = 'auto'
     }
     const targetHeight = to_visible
-        ? element.getBoundingClientRect().height
-        : 0
+      ? element.getBoundingClientRect().height
+      : 0
     const targetOpacity = to_visible ? 1 : 0
 
-    if (to_visible) {
-      if (!previousHeight) {
-        element.style.height = '0px'
-      }
-      if (!element.style.opacity) {
-        element.style.opacity = '0'
-      }
+    element.style.height = previousHeight
+    if (to_visible && !element.style.opacity) {
+      element.style.opacity = '0'
     }
     animationRef.current = animate(element, {
       height: targetHeight,
