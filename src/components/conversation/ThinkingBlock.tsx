@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { accentSelectedRing, textFaint } from '../../styles/uiClasses'
+import { selectedRing } from '../../styles/uiClasses'
 import type { ConversationListItem } from '../../core/types'
 import { ChevronToggle } from '../shared/ChevronToggle'
 import { ExpandablePre } from '../shared/ExpandablePre'
@@ -34,7 +34,7 @@ export function ThinkingBlock({
           expanded ? 'w-full' : 'inline-flex w-fit max-w-full'
         } ${
           selected
-            ? `border px-2.5 py-1.5 ${accentSelectedRing}`
+            ? `border px-2.5 py-1.5 ${selectedRing}`
             : 'border border-transparent px-2.5 py-1.5'
         }`}
       >
@@ -46,14 +46,14 @@ export function ThinkingBlock({
           }}
           className="flex w-full items-center gap-2 text-left"
         >
-          <ChevronToggle expanded={expanded} className={textFaint} />
-          <span className={`text-xs font-medium ${textFaint}`}>Thinking</span>
+          <ChevronToggle expanded={expanded} className="text-faint" />
+          <span className="text-xs font-medium text-faint">Thinking</span>
         </button>
         {expanded && (
           <ExpandablePre
             text={text}
             mono={false}
-            className={`mt-2 pl-5 text-sm italic ${textFaint}`}
+            className="mt-2 pl-5 text-sm italic text-faint"
           />
         )}
       </div>

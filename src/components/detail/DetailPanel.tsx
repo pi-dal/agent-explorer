@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import {
-  accentTabActive,
-  accentTabInactive,
+  chipActive,
+  chipInactive,
   emptyState,
   sectionDivider,
 } from '../../styles/uiClasses'
@@ -56,7 +56,7 @@ export function DetailPanel() {
   }
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col bg-surface">
       <div className={`flex items-center gap-1 px-1 ${sectionDivider}`}>
         <TabButton active={tab === 'session'} onClick={() => setTab('session')}>
           Session
@@ -83,7 +83,7 @@ export function DetailPanel() {
           Raw JSON
         </TabButton>
       </div>
-      <div className="flex-1 overflow-auto p-3 bg-surface">
+      <div className="flex-1 overflow-auto p-3">
         {tab === 'session' && <SessionMetaPanel session={session} />}
         {tab === 'summary' && hasEvent && <EventSummary selection={selection} />}
         {tab === 'usage' && hasUsage && <UsagePanel selection={selection} />}
@@ -110,7 +110,7 @@ function TabButton({
       onClick={onClick}
       disabled={disabled}
       className={`my-1 rounded px-2 py-1 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-40 ${
-        active ? accentTabActive : accentTabInactive
+        active ? chipActive : chipInactive
       }`}
     >
       {children}

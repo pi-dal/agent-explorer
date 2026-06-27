@@ -1,5 +1,5 @@
 import { Search, X } from 'lucide-react'
-import { accentInputFocus, hoverRow, textFaint, textInput } from '../../styles/uiClasses'
+import { inputFocus, textInput } from '../../styles/uiClasses'
 import { useSettingsStore } from '../../store/settingsStore'
 
 export function SearchInput() {
@@ -9,7 +9,7 @@ export function SearchInput() {
   return (
     <div className="relative w-52 max-w-full">
       <Search
-        className={`pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 ${textFaint}`}
+        className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-faint"
         size={14}
         strokeWidth={1.75}
         aria-hidden
@@ -20,13 +20,13 @@ export function SearchInput() {
         value={searchQuery}
         onChange={(event) => setSearchQuery(event.target.value)}
         placeholder="Search session…"
-        className={`h-7 w-full rounded pl-7 pr-7 text-xs ${textInput} ${accentInputFocus}`}
+        className={`h-7 w-full rounded pl-7 pr-7 text-xs ${textInput} ${inputFocus}`}
       />
       {searchQuery && (
         <button
           type="button"
           onClick={() => setSearchQuery('')}
-          className={`absolute right-1.5 top-1/2 inline-flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded ${textFaint} ${hoverRow} hover:text-foreground`}
+          className="absolute right-1.5 top-1/2 inline-flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded text-faint hover:bg-hover hover:text-foreground"
           aria-label="Clear search"
         >
           <X size={12} strokeWidth={1.75} aria-hidden />

@@ -1,6 +1,6 @@
 import {
   accentPairHighlight,
-  accentSelectedRing,
+  selectedRing,
 } from '../../styles/uiClasses'
 
 export function toolCardBorderClass({
@@ -13,7 +13,7 @@ export function toolCardBorderClass({
   isFailed?: boolean
 }): string {
   if (selected) {
-    return accentSelectedRing
+    return selectedRing
   }
   if (pairHighlighted) {
     return accentPairHighlight

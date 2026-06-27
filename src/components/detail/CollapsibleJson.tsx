@@ -3,7 +3,6 @@ import { useState } from 'react'
 import {
   overlayIconButton,
   textExpandButton,
-  textMuted,
 } from '../../styles/uiClasses'
 import { ChevronToggle } from '../shared/ChevronToggle'
 import { ToolbarButton } from '../shared/ToolbarButton'
@@ -39,7 +38,7 @@ function JsonNode({
     return (
       <div style={depth > 1 ? { paddingLeft: LEVEL_INDENT } : undefined} className="font-mono text-xs leading-5">
         {prefix}
-        <span className={textMuted}>null</span>
+        <span className="text-muted-foreground">null</span>
       </div>
     )
   }
@@ -78,7 +77,7 @@ function JsonNode({
       return (
         <div style={depth > 1 ? { paddingLeft: LEVEL_INDENT } : undefined} className="font-mono text-xs leading-5">
           {prefix}
-          <span className={textMuted}>[]</span>
+          <span className="text-muted-foreground">[]</span>
         </div>
       )
     }
@@ -90,8 +89,8 @@ function JsonNode({
           className={`inline-flex items-center gap-1 text-left ${textExpandButton}`}
         >
           {prefix}
-          <ChevronToggle expanded={expanded} className={textMuted} />
-          <span className={textMuted}>Array[{value.length}]</span>
+          <ChevronToggle expanded={expanded} className="text-muted-foreground" />
+          <span className="text-muted-foreground">Array[{value.length}]</span>
         </button>
         {expanded &&
           value.map((item, index) => (
@@ -113,7 +112,7 @@ function JsonNode({
       return (
         <div style={depth > 1 ? { paddingLeft: LEVEL_INDENT } : undefined} className="font-mono text-xs leading-5">
           {prefix}
-          <span className={textMuted}>{'{}'}</span>
+          <span className="text-muted-foreground">{'{}'}</span>
         </div>
       )
     }
@@ -126,8 +125,8 @@ function JsonNode({
             className={`inline-flex items-center gap-1 text-left ${textExpandButton}`}
           >
             {prefix}
-            <ChevronToggle expanded={expanded} className={textMuted} />
-            <span className={textMuted}>Object({entries.length})</span>
+            <ChevronToggle expanded={expanded} className="text-muted-foreground" />
+            <span className="text-muted-foreground">Object({entries.length})</span>
           </button>
         )}
         {(depth === 0 || expanded) &&

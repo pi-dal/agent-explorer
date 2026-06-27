@@ -1,11 +1,6 @@
 import { CircleCheck, CircleX } from 'lucide-react'
 import { useState } from 'react'
-import {
-  surfaceCard,
-  textFaint,
-  textMonoMuted,
-  textMuted,
-} from '../../styles/uiClasses'
+import { surfaceCard } from '../../styles/uiClasses'
 import type { ConversationListItem } from '../../core/types'
 import { ChevronToggle } from '../shared/ChevronToggle'
 import { ExpandablePre } from '../shared/ExpandablePre'
@@ -65,7 +60,7 @@ export function ToolResultCard({
             expanded ? 'w-full px-3 py-2' : 'px-2.5 py-1.5'
           }`}
         >
-          <ChevronToggle expanded={expanded} className={textFaint} />
+          <ChevronToggle expanded={expanded} className="text-faint" />
           {isFailed ? (
             <CircleX
               className="shrink-0 text-danger"
@@ -81,8 +76,8 @@ export function ToolResultCard({
               aria-hidden
             />
           )}
-          <span className={`text-sm font-medium ${textMuted}`}>Result</span>
-          {shortId && <span className={`text-[10px] ${textMonoMuted}`}>{shortId}</span>}
+          <span className="text-sm font-medium text-muted-foreground">Result</span>
+          {shortId && <span className="text-[10px] font-mono text-faint">{shortId}</span>}
         </button>
         {expanded && <ExpandablePre text={text} className="border-t border-border" />}
       </div>

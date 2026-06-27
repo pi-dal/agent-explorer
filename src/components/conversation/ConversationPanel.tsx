@@ -1,12 +1,6 @@
 import { useRef, useEffect, useMemo, useCallback, useState } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import {
-  emptyState,
-  panelHeader,
-  panelHeaderSticky,
-  textFaint,
-  turnDividerLine,
-} from '../../styles/uiClasses'
+import { emptyState, panelHeader } from '../../styles/uiClasses'
 import { filterConversationItems } from '../../core/filter'
 import { useSessionStore } from '../../store/sessionStore'
 import { useSettingsStore } from '../../store/settingsStore'
@@ -121,7 +115,7 @@ export function ConversationPanel() {
   if (items.length === 0) {
     return (
       <div className="flex h-full flex-col">
-        <div className={`px-4 py-2 ${panelHeaderSticky}`}>
+        <div className={panelHeader}>
           Conversation · 0 / {allItems.length} messages
         </div>
         <div className={`flex flex-1 items-center justify-center p-4 ${emptyState}`}>
@@ -133,7 +127,7 @@ export function ConversationPanel() {
 
   return (
     <div className="flex h-full flex-col">
-      <div className={`px-4 py-2 ${panelHeader}`}>
+      <div className={panelHeader}>
         Conversation · {items.length}
         {items.length !== allItems.length ? ` / ${allItems.length}` : ''} messages ·{' '}
         {session.meta.turnCount} turns
@@ -159,11 +153,11 @@ export function ConversationPanel() {
               >
                 {row.kind === 'turn' ? (
                   <div className="flex items-center gap-3 px-4 py-3">
-                    <div className={`h-px flex-1 ${turnDividerLine}`} />
-                    <span className={`text-[10px] font-semibold uppercase tracking-widest ${textFaint}`}>
+                    <div className={`h-px flex-1 bg-divider`} />
+                    <span className="text-[10px] font-semibold uppercase tracking-widest text-faint">
                       Turn {row.turnIndex}
                     </span>
-                    <div className={`h-px flex-1 ${turnDividerLine}`} />
+                    <div className={`h-px flex-1 bg-divider`} />
                   </div>
                 ) : (
                   <ConversationMessage

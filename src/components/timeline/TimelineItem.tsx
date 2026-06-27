@@ -1,12 +1,4 @@
 import type { KeyboardEvent } from 'react'
-import {
-  accentTimelineSelected,
-  hoverRow,
-  requestHighlight,
-  textBody,
-  textFaint,
-  textMuted,
-} from '../../styles/uiClasses'
 import type { TimelineEvent } from '../../core/types'
 import { categoryDotClass } from './categoryStyle'
 
@@ -37,21 +29,23 @@ export function TimelineItem({
       onKeyDown={onKeyDown}
       className={`flex h-full w-full min-h-0 shrink-0 items-center gap-2 overflow-hidden border-l-2 px-2 text-left text-xs ${
         selected
-          ? accentTimelineSelected
-          : requestHighlighted
-            ? `border-transparent ${requestHighlight}`
-            : `border-transparent ${hoverRow}`
+          ? 'border-accent bg-accent-subtle'
+          : 'border-transparent hover:bg-hover'
       }`}
     >
-      <span className={`w-8 shrink-0 font-mono ${textFaint}`}>#{event.lineIndex}</span>
+      <span
+        className={`w-8 shrink-0 font-mono ${(requestHighlighted || selected) ? 'text-foreground' : 'text-faint'}`}
+      >
+        #{event.lineIndex}
+      </span>
       <span
         className={`h-2 w-2 shrink-0 rounded-full ${categoryDotClass(event.category)}`}
       />
       <span className="flex h-8 min-w-0 flex-1 flex-col justify-center overflow-hidden">
-        <span className={`block h-4 truncate leading-4 font-medium ${textBody}`}>
+        <span className={`block h-4 truncate leading-4 font-medium text-foreground`}>
           {event.label}
         </span>
-        <span className={`block h-4 truncate leading-4 ${textMuted}`}>
+        <span className={`block h-4 truncate leading-4 text-faint`}>
           {event.preview || '\u00a0'}
         </span>
       </span>

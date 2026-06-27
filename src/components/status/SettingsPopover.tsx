@@ -1,19 +1,12 @@
 import { Settings } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import {
-  dropdownPanel,
-  hoverRow,
-  sectionDivider,
-  textBody,
-  textFaint,
-  textMuted,
-} from '../../styles/uiClasses'
+import { dropdownPanel, sectionDivider } from '../../styles/uiClasses'
 import { ToolbarButton } from '../shared/ToolbarButton'
 import { useSettingsStore } from '../../store/settingsStore'
 
 function SettingsSection({ title }: { title: string }) {
   return (
-    <div className={`px-3 py-2 text-[10px] font-semibold uppercase tracking-wider ${sectionDivider} ${textFaint}`}>
+    <div className={`px-3 py-2 text-[10px] text-faint font-semibold uppercase tracking-wider ${sectionDivider}`}>
       {title}
     </div>
   )
@@ -31,7 +24,7 @@ function SettingToggle({
   onChange: (checked: boolean) => void
 }) {
   return (
-    <label className={`flex cursor-pointer items-start gap-2 px-3 py-2 ${hoverRow}`}>
+    <label className="flex cursor-pointer items-start gap-2 px-3 py-2 hover:bg-hover">
       <input
         type="checkbox"
         checked={checked}
@@ -39,8 +32,8 @@ function SettingToggle({
         className="mt-0.5"
       />
       <span>
-        <span className={`block text-xs font-medium ${textBody}`}>{label}</span>
-        <span className={`block text-[10px] ${textMuted}`}>{description}</span>
+        <span className="block text-xs font-medium text-foreground">{label}</span>
+        <span className="block text-[10px] text-muted-foreground">{description}</span>
       </span>
     </label>
   )

@@ -1,10 +1,4 @@
-import {
-  accentSelectedRing,
-  accentSelectedSubtle,
-  accentUserBubble,
-  accentUserBubbleSelected,
-  hoverRow,
-} from '../../styles/uiClasses'
+import { selectedRing } from '../../styles/uiClasses'
 import type { ConversationListItem } from '../../core/types'
 
 interface MessageBubbleProps {
@@ -21,8 +15,10 @@ export function UserBubble({ item, selected, onSelect }: MessageBubbleProps) {
       <button
         type="button"
         onClick={() => { onSelect(item) }}
-        className={`max-w-[85%] rounded-2xl rounded-br-md px-4 py-2.5 text-left text-sm leading-relaxed ${
-          selected ? accentUserBubbleSelected : accentUserBubble
+        className={`max-w-[85%] rounded-2xl rounded-br-md px-4 py-2.5 text-left text-sm leading-relaxed text-foreground border ${
+          selected
+            ? `bg-surface-elevated ${selectedRing}`
+            : 'bg-surface-elevated border-transparent'
         }`}
       >
         <p className="whitespace-pre-wrap break-words">{text}</p>
@@ -39,10 +35,10 @@ export function AssistantBubble({ item, selected, onSelect }: MessageBubbleProps
       <button
         type="button"
         onClick={() => { onSelect(item) }}
-        className={`max-w-[85%] rounded-2xl rounded-bl-md border px-4 py-2.5 text-left text-sm leading-relaxed text-foreground ${
+        className={`px-4 py-1 rounded-lg text-left text-sm leading-relaxed text-foreground border ${
           selected
-            ? `border-accent-border bg-surface ${accentSelectedRing}`
-            : `border-border bg-surface ${hoverRow}`
+            ? `border-accent-border ${selectedRing}`
+            : 'border-transparent'
         }`}
       >
         <p className="whitespace-pre-wrap break-words">{text}</p>
@@ -58,7 +54,7 @@ export function SystemMessage({ item, selected, onSelect }: MessageBubbleProps) 
         type="button"
         onClick={() => { onSelect(item) }}
         className={`max-w-[90%] rounded-lg border border-dashed px-3 py-2 text-center text-xs text-muted-foreground ${
-          selected ? accentSelectedSubtle : 'border-border-subtle'
+          selected ? selectedRing : 'border-border-subtle'
         }`}
       >
         <span className="font-medium uppercase tracking-wide">System</span>

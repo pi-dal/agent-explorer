@@ -1,12 +1,6 @@
 import { Wrench } from 'lucide-react'
 import { useState } from 'react'
-import {
-  surfaceCard,
-  textFaint,
-  textMono,
-  textMonoMuted,
-  textMuted,
-} from '../../styles/uiClasses'
+import { surfaceCard } from '../../styles/uiClasses'
 import type { ConversationListItem } from '../../core/types'
 import { ChevronToggle } from '../shared/ChevronToggle'
 import { ExpandablePre } from '../shared/ExpandablePre'
@@ -67,15 +61,15 @@ export function ToolCallCard({
             expanded ? 'w-full px-3 py-2' : 'px-2.5 py-1.5'
           }`}
         >
-          <ChevronToggle expanded={expanded} className={textFaint} />
+          <ChevronToggle expanded={expanded} className="text-faint" />
           <Wrench
-            className={`shrink-0 ${textMuted}`}
+          className="shrink-0 text-muted-foreground"
             size={14}
             strokeWidth={1.75}
             aria-hidden
           />
-          <span className={`text-sm font-medium ${textMono}`}>{toolName}</span>
-          {shortId && <span className={`text-[10px] ${textMonoMuted}`}>{shortId}</span>}
+          <span className="text-sm font-medium font-mono text-foreground">{toolName}</span>
+          {shortId && <span className="text-[10px] font-mono text-faint">{shortId}</span>}
         </button>
         {expanded && <ExpandablePre text={inputText} className="border-t border-border" />}
       </div>

@@ -1,7 +1,7 @@
 import { TIMELINE_CATEGORY_OPTIONS } from '../../core/filter'
 import {
-  accentChipActive,
-  accentChipInactive,
+  chipActive,
+  chipInactive,
   sectionDivider,
 } from '../../styles/uiClasses'
 import type { TimelineCategoryFilter } from '../../store/settingsStore'
@@ -21,7 +21,7 @@ export function TimelineCategoryFilter() {
             type="button"
             onClick={() => setFilter(option.value as TimelineCategoryFilter)}
             className={`rounded px-2 py-0.5 text-[10px] font-medium ${
-              active ? accentChipActive : accentChipInactive
+              active ? chipActive : chipInactive
             }`}
           >
             {option.label}
