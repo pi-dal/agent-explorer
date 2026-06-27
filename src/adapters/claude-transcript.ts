@@ -32,6 +32,11 @@ function getString(record: Record<string, unknown>, key: string): string | undef
   return typeof value === 'string' ? value : undefined
 }
 
+function getBoolean(record: Record<string, unknown>, key: string, defaultValue?: boolean): boolean {
+  const value = record[key]
+  return typeof value === 'boolean' ? value : (defaultValue ?? false)
+}
+
 function isToolResultUser(record: Record<string, unknown>): boolean {
   if (record.type !== 'user' || !isRecord(record.message)) return false
   const content = record.message.content
@@ -234,29 +239,26 @@ export const claudeTranscriptAdapter: SessionAdapter = {
     const conversationItems: ConversationListItem[] = []
 
     let turnIndex = 0
+    let lastPromptId: string | undefined
     let sessionId: string | undefined
     let model: string | undefined
     let cwd: string | undefined
     let version: string | undefined
-    const turnSet = new Set<number>()
 
     for (const line of lines) {
       const record = line.data
       if (!isRecord(record)) continue
 
       const type = getString(record, 'type') ?? 'unknown'
+      const promptId = getString(record, 'promptId')
       const eventId = `line-${line.lineIndex}`
 
       sessionId ??= getString(record, 'sessionId')
       cwd ??= getString(record, 'cwd')
       version ??= getString(record, 'version')
 
-      if (type === 'user' && !isToolResultUser(record)) {
+      if (type === 'user' && promptId != lastPromptId && !isToolResultUser(record)) {
         turnIndex++
-        turnSet.add(turnIndex)
-      } else if (turnIndex === 0) {
-        turnIndex = 1
-        turnSet.add(1)
       }
 
       let event: TimelineEvent = {
@@ -276,6 +278,7 @@ export const claudeTranscriptAdapter: SessionAdapter = {
       }
 
       if (type === 'user') {
+        lastPromptId = promptId
         if (isToolResultUser(record)) {
           const content = record.message as Record<string, unknown>
           const parts = content.content as unknown[]
@@ -299,7 +302,7 @@ export const claudeTranscriptAdapter: SessionAdapter = {
           }
           conversationItems.push(item)
           event.conversationItem = item
-        } else {
+        } else if (!getBoolean(record, 'isMeta')) {
           const text = extractUserText(record)
           const itemId = `conv-${line.lineIndex}-user`
           const item: ConversationListItem = {
@@ -354,7 +357,7 @@ export const claudeTranscriptAdapter: SessionAdapter = {
         cwd,
         version,
         eventCount: events.length,
-        turnCount: turnSet.size,
+        turnCount: turnIndex,
       },
       events,
       conversationItems,
