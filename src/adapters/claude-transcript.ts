@@ -250,8 +250,8 @@ export const claudeTranscriptAdapter: SessionAdapter = {
       if (!isRecord(record)) continue
 
       const type = getString(record, 'type') ?? 'unknown'
-      const promptId = getString(record, 'promptId')
       const eventId = `line-${line.lineIndex}`
+      const promptId = getString(record, 'promptId') ?? eventId
 
       sessionId ??= getString(record, 'sessionId')
       cwd ??= getString(record, 'cwd')
