@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useEffectEvent } from 'react'
 import { type VirtualizerOptions, elementScroll } from '@tanstack/react-virtual'
 import { animate, spring } from 'animejs'
 
@@ -9,7 +9,7 @@ interface SpringOptions {
 }
 
 export function useSpringScrollToFn(springOptions?: SpringOptions): ScrollToFn {
-  return useCallback((offset, options, instance) => {
+  return useEffectEvent((offset, options, instance) => {
     const scrollElement = instance.scrollElement as Element
     const modifiedOptions = { ...options, behavior: undefined }
     const target = { offset: instance.scrollOffset ?? 0 }
@@ -35,5 +35,5 @@ export function useSpringScrollToFn(springOptions?: SpringOptions): ScrollToFn {
     cleanup = () => {
       scrollElement.removeEventListener('wheel', wheelHandler)
     }
-  }, [])
+  })
 }

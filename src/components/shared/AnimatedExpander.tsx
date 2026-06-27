@@ -23,11 +23,6 @@ export function AnimatedExpander(props: AnimatedExpanderProps) {
   const animationRef = useRef<JSAnimation | null>(null)
   const [state, setState] = useState<State>(targetState)
 
-  if (state !== STATE_ANIMATING && state !== targetState) {
-    setState(STATE_ANIMATING)
-    return
-  }
-
   useLayoutEffect(() => {
     animationRef.current?.cancel()
 
@@ -79,6 +74,11 @@ export function AnimatedExpander(props: AnimatedExpanderProps) {
       animationRef.current?.cancel()
     }
   }, [animationRef])
+
+  if (state !== STATE_ANIMATING && state !== targetState) {
+    setState(STATE_ANIMATING)
+    return
+  }
 
   return (
     <div ref={elementRef}>
