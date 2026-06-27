@@ -1,10 +1,11 @@
-import { useRef, useEffect, useMemo, useCallback } from 'react'
+import { useRef, useEffect, useMemo } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { emptyState, panelHeader } from '../../styles/uiClasses'
 import { filterConversationItems } from '../../core/filter'
 import { useSessionStore } from '../../store/sessionStore'
 import { useSettingsStore } from '../../store/settingsStore'
 import type { ConversationListItem } from '../../core/types'
+import { useSpringScrollToFn } from '../shared/useSpringScrollToFn'
 import { ConversationMessage } from './ConversationMessage'
 
 const EMPTY_ITEMS: ConversationListItem[] = []
@@ -12,10 +13,6 @@ const EMPTY_ITEMS: ConversationListItem[] = []
 type VirtualRow =
   | { kind: 'turn'; turnIndex: number; key: string }
   | { kind: 'item'; key: string; itemIndex: number }
-
-function measureRowElement(element: HTMLElement): number {
-  return element.getBoundingClientRect().height
-}
 
 function estimateRowSize(
   row: VirtualRow | undefined,
@@ -32,11 +29,9 @@ function estimateRowSize(
     case 'assistant':
       return Math.min(320, 72 + Math.ceil(item.event.preview.length / 48) * 20)
     case 'thinking':
-      return 44
+      return 26
     case 'tool_call':
-      return 44
-    case 'tool_result':
-      return 44
+      return 30
     case 'system':
       return 80
     default:
@@ -113,25 +108,15 @@ export function ConversationPanel() {
     return result
   }, [items])
 
+  const scrollToFn = useSpringScrollToFn()
   const virtualizer = useVirtualizer({
     count: rows.length,
     getScrollElement: () => parentRef.current,
     getItemKey: (index) => rows[index]?.key ?? String(index),
     estimateSize: (index) => estimateRowSize(rows[index], items),
     overscan: 8,
-    measureElement: (element) => measureRowElement(element as HTMLElement),
+    scrollToFn,
   })
-
-  const remeasureRow = useCallback(
-    (rowIndex: number) => {
-      const element = parentRef.current?.querySelector(
-        `[data-index="${rowIndex}"]`,
-      ) as HTMLElement | null
-      if (!element) return
-      virtualizer.resizeItem(rowIndex, measureRowElement(element))
-    },
-    [virtualizer],
-  )
 
   useEffect(() => {
     if (selection?.source === 'conversation') {
@@ -216,7 +201,6 @@ export function ConversationPanel() {
                       activeToolCallId,
                     )}
                     onSelect={selectConversationItem}
-                    onLayoutChange={() => remeasureRow(virtualRow.index)}
                   />
                 )}
               </div>

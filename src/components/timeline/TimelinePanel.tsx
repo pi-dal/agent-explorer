@@ -5,6 +5,7 @@ import { filterTimelineEvents } from '../../core/filter'
 import type { TimelineEvent } from '../../core/types'
 import { useSessionStore } from '../../store/sessionStore'
 import { useSettingsStore } from '../../store/settingsStore'
+import { useSpringScrollToFn } from '../shared/useSpringScrollToFn'
 import { TIMELINE_ITEM_HEIGHT, TimelineItem } from './TimelineItem'
 import { TimelineCategoryFilter } from './TimelineCategoryFilter'
 import {
@@ -43,6 +44,7 @@ export function TimelinePanel() {
     [allEvents, searchQuery, timelineCategoryFilter, hideSystem, hideToolCalls],
   )
 
+  const scrollToFn = useSpringScrollToFn()
   const virtualizer = useVirtualizer({
     count: events.length,
     getScrollElement: () => parentRef.current,
@@ -50,6 +52,7 @@ export function TimelinePanel() {
     estimateSize: () => TIMELINE_ITEM_HEIGHT,
     gap: 0,
     overscan: 12,
+    scrollToFn
   })
 
   const scrollToEventIndex = useCallback(

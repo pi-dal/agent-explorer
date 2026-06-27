@@ -4,16 +4,13 @@ import { selectedRing } from '../../styles/uiClasses'
 import type { ConversationListItem } from '../../core/types'
 import { ChevronToggle } from '../shared/ChevronToggle'
 import { ExpandablePre } from '../shared/ExpandablePre'
-import { useRowResize } from './useRowResize'
+import { AnimatedExpander } from '../shared/AnimatedExpander'
 
 interface ToolCallCardProps {
   item: ConversationListItem
   selected: boolean
   pairHighlighted: boolean
   onSelect: (item: ConversationListItem) => void
-  onHoverStart?: () => void
-  onHoverEnd?: () => void
-  onLayoutChange?: () => void
 }
 
 function shortToolId(id?: string): string | null {
@@ -27,7 +24,6 @@ export function ToolCallCard({
   selected,
   pairHighlighted,
   onSelect,
-  onLayoutChange,
 }: ToolCallCardProps) {
   const [expanded, setExpanded] = useState(false)
   const block = item.block
@@ -37,8 +33,6 @@ export function ToolCallCard({
   const isResult = item.role === 'tool_result'
   const shortId = shortToolId(block?.toolCallId)
 
-  useRowResize(expanded, onLayoutChange)
-
   function toggle() {
     setExpanded((value) => !value)
   }
@@ -46,7 +40,7 @@ export function ToolCallCard({
   return (
     <div className="px-4">
       <div
-        className={`rounded-lg border w-fit ${
+        className={`flex flex-col rounded-lg border w-fit ${
           selected ? selectedRing : 'border-transparent'
         }`}
         onClick={() => { onSelect(item) }}
@@ -91,7 +85,9 @@ export function ToolCallCard({
           {shortId && <span className="text-xs font-mono text-faint">({shortId})</span>}
           <ChevronToggle expanded={expanded} className="text-faint" />
         </button>
-        {expanded && <ExpandablePre text={text} className="rounded bg-surface mx-1 my-1 px-3 py-2 border border-border" />}
+        <AnimatedExpander expanded={expanded}>
+          <ExpandablePre text={text} className="rounded bg-surface mx-1 my-1 px-3 py-2 border border-border" />
+        </AnimatedExpander>
       </div>
     </div>
   )

@@ -8,7 +8,6 @@ interface ConversationMessageProps {
   selected: boolean
   pairHighlighted: boolean
   onSelect: (item: ConversationListItem) => void
-  onLayoutChange?: () => void
 }
 
 export function ConversationMessage({
@@ -16,7 +15,6 @@ export function ConversationMessage({
   selected,
   pairHighlighted,
   onSelect,
-  onLayoutChange,
 }: ConversationMessageProps) {
   switch (item.role) {
     case 'user':
@@ -29,7 +27,6 @@ export function ConversationMessage({
           item={item}
           selected={selected}
           onSelect={onSelect}
-          onLayoutChange={onLayoutChange}
         />
       )
     case 'tool_call':
@@ -40,7 +37,6 @@ export function ConversationMessage({
           selected={selected}
           pairHighlighted={pairHighlighted}
           onSelect={onSelect}
-          onLayoutChange={onLayoutChange}
         />
       )
     case 'system':
