@@ -30,9 +30,7 @@ export function ThinkingBlock({
   return (
     <div className="px-4" onClick={() => { onSelect(item) }}>
       <div
-        className={`rounded-lg px-2 py-1 ${
-          expanded ? 'w-full' : 'inline-flex w-fit max-w-full'
-        } ${
+        className={`rounded-lg px-2 py-1 w-fit ${
           selected
             ? `border ${selectedRing}`
             : 'border border-transparent'

@@ -46,9 +46,9 @@ export function ToolCallCard({
   return (
     <div className="px-4">
       <div
-        className={`rounded-lg border ${
-          expanded ? 'max-w-2xl' : 'inline-flex w-fit max-w-full'
-        } ${selected ? selectedRing : 'border-transparent'}`}
+        className={`rounded-lg border w-fit ${
+          selected ? selectedRing : 'border-transparent'
+        }`}
         onClick={() => { onSelect(item) }}
       >
         <button
