@@ -1,4 +1,4 @@
-import { useRef, useEffect, useMemo, useCallback, useState } from 'react'
+import { useRef, useEffect, useMemo, useCallback } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { emptyState, panelHeader } from '../../styles/uiClasses'
 import { filterConversationItems } from '../../core/filter'
@@ -6,11 +6,6 @@ import { useSessionStore } from '../../store/sessionStore'
 import { useSettingsStore } from '../../store/settingsStore'
 import type { ConversationListItem } from '../../core/types'
 import { ConversationMessage } from './ConversationMessage'
-import { estimateRowSize } from './estimateRowSize'
-import {
-  isToolPairHighlighted,
-  resolveActiveToolCallId,
-} from './toolPairHighlight'
 
 const EMPTY_ITEMS: ConversationListItem[] = []
 
@@ -22,12 +17,65 @@ function measureRowElement(element: HTMLElement): number {
   return element.getBoundingClientRect().height
 }
 
+function estimateRowSize(
+  row: VirtualRow | undefined,
+  items: ConversationListItem[],
+): number {
+  if (!row) return 64
+  if (row.kind === 'turn') return 40
+
+  const item = items[row.itemIndex]
+  if (!item) return 64
+
+  switch (item.role) {
+    case 'user':
+    case 'assistant':
+      return Math.min(320, 72 + Math.ceil(item.event.preview.length / 48) * 20)
+    case 'thinking':
+      return 44
+    case 'tool_call':
+      return 44
+    case 'tool_result':
+      return 44
+    case 'system':
+      return 80
+    default:
+      return 64
+  }
+}
+
+function resolveActiveToolCallId(
+  items: ConversationListItem[],
+  selectedItemId: string | null | undefined,
+): string | null {
+  if (selectedItemId) {
+    const selected = items.find((item) => item.id === selectedItemId)
+    if (
+      selected?.block?.toolCallId &&
+      (selected.role === 'tool_call' || selected.role === 'tool_result')
+    ) {
+      return selected?.block?.toolCallId
+    }
+  }
+
+  return null
+}
+
+function isToolPairHighlighted(
+  item: ConversationListItem,
+  activeToolCallId: string | null,
+): boolean {
+  if (!activeToolCallId || !item.block?.toolCallId) return false
+  if (item.block?.toolCallId !== activeToolCallId) return false
+  if (item.role !== 'tool_call' && item.role !== 'tool_result') return false
+  return true
+}
+
 export function ConversationPanel() {
   const session = useSessionStore((s) => s.session)
   const selection = useSessionStore((s) => s.selection)
   const selectConversationItem = useSessionStore((s) => s.selectConversationItem)
   const parentRef = useRef<HTMLDivElement>(null)
-  const [hoveredItemId, setHoveredItemId] = useState<string | null>(null)
 
   const allItems = session?.conversationItems ?? EMPTY_ITEMS
   const searchQuery = useSettingsStore((s) => s.searchQuery)
@@ -47,8 +95,8 @@ export function ConversationPanel() {
   const selectedItemId = selection?.conversationItem?.id
 
   const activeToolCallId = useMemo(
-    () => resolveActiveToolCallId(items, hoveredItemId, selectedItemId),
-    [items, hoveredItemId, selectedItemId],
+    () => resolveActiveToolCallId(items, selectedItemId),
+    [items, selectedItemId],
   )
 
   const rows: VirtualRow[] = useMemo(() => {
@@ -166,22 +214,8 @@ export function ConversationPanel() {
                     pairHighlighted={isToolPairHighlighted(
                       items[row.itemIndex]!,
                       activeToolCallId,
-                      hoveredItemId,
-                      selectedItemId,
                     )}
                     onSelect={selectConversationItem}
-                    onHoverStart={
-                      items[row.itemIndex]!.role === 'tool_call' ||
-                      items[row.itemIndex]!.role === 'tool_result'
-                        ? () => setHoveredItemId(items[row.itemIndex]!.id)
-                        : undefined
-                    }
-                    onHoverEnd={
-                      items[row.itemIndex]!.role === 'tool_call' ||
-                      items[row.itemIndex]!.role === 'tool_result'
-                        ? () => setHoveredItemId(null)
-                        : undefined
-                    }
                     onLayoutChange={() => remeasureRow(virtualRow.index)}
                   />
                 )}

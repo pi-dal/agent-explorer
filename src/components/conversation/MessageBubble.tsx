@@ -11,7 +11,7 @@ export function UserBubble({ item, selected, onSelect }: MessageBubbleProps) {
   const text = item.block?.text ?? item.event.preview
 
   return (
-    <div className="flex justify-end px-4 py-2">
+    <div className="flex justify-end px-4 pt-2 pb-8">
       <button
         type="button"
         onClick={() => { onSelect(item) }}
@@ -21,7 +21,7 @@ export function UserBubble({ item, selected, onSelect }: MessageBubbleProps) {
             : 'bg-surface-elevated border-transparent'
         }`}
       >
-        <p className="whitespace-pre-wrap break-words">{text}</p>
+        <p className="whitespace-pre-wrap wrap-break-word">{text}</p>
       </button>
     </div>
   )
@@ -31,17 +31,17 @@ export function AssistantBubble({ item, selected, onSelect }: MessageBubbleProps
   const text = item.block?.text ?? item.event.preview
 
   return (
-    <div className="flex justify-start px-4 py-2">
+    <div className="flex justify-start px-4">
       <button
         type="button"
         onClick={() => { onSelect(item) }}
-        className={`px-4 py-1 rounded-lg text-left text-sm leading-relaxed text-foreground border ${
+        className={`px-2 py-1 rounded-lg text-left text-sm leading-relaxed text-foreground border ${
           selected
             ? `border-accent-border ${selectedRing}`
             : 'border-transparent'
         }`}
       >
-        <p className="whitespace-pre-wrap break-words">{text}</p>
+        <p className="whitespace-pre-wrap wrap-break-word">{text}</p>
       </button>
     </div>
   )

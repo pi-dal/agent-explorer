@@ -2,15 +2,12 @@ import type { ConversationListItem } from '../../core/types'
 import { AssistantBubble, SystemMessage, UserBubble } from './MessageBubble'
 import { ThinkingBlock } from './ThinkingBlock'
 import { ToolCallCard } from './ToolCallCard'
-import { ToolResultCard } from './ToolResultCard'
 
 interface ConversationMessageProps {
   item: ConversationListItem
   selected: boolean
   pairHighlighted: boolean
   onSelect: (item: ConversationListItem) => void
-  onHoverStart?: () => void
-  onHoverEnd?: () => void
   onLayoutChange?: () => void
 }
 
@@ -19,8 +16,6 @@ export function ConversationMessage({
   selected,
   pairHighlighted,
   onSelect,
-  onHoverStart,
-  onHoverEnd,
   onLayoutChange,
 }: ConversationMessageProps) {
   switch (item.role) {
@@ -38,26 +33,13 @@ export function ConversationMessage({
         />
       )
     case 'tool_call':
+    case 'tool_result':
       return (
         <ToolCallCard
           item={item}
           selected={selected}
           pairHighlighted={pairHighlighted}
           onSelect={onSelect}
-          onHoverStart={onHoverStart}
-          onHoverEnd={onHoverEnd}
-          onLayoutChange={onLayoutChange}
-        />
-      )
-    case 'tool_result':
-      return (
-        <ToolResultCard
-          item={item}
-          selected={selected}
-          pairHighlighted={pairHighlighted}
-          onSelect={onSelect}
-          onHoverStart={onHoverStart}
-          onHoverEnd={onHoverEnd}
           onLayoutChange={onLayoutChange}
         />
       )

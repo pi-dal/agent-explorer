@@ -28,14 +28,14 @@ export function ThinkingBlock({
   }
 
   return (
-    <div className="px-4 py-2" onClick={() => { onSelect(item) }}>
+    <div className="px-4" onClick={() => { onSelect(item) }}>
       <div
-        className={`max-w-3xl rounded-lg ${
+        className={`rounded-lg px-2 py-1 ${
           expanded ? 'w-full' : 'inline-flex w-fit max-w-full'
         } ${
           selected
-            ? `border px-2.5 py-1.5 ${selectedRing}`
-            : 'border border-transparent px-2.5 py-1.5'
+            ? `border ${selectedRing}`
+            : 'border border-transparent'
         }`}
       >
         <button
@@ -44,16 +44,16 @@ export function ThinkingBlock({
             event.stopPropagation()
             toggle()
           }}
-          className="flex w-full items-center gap-2 text-left"
+          className="flex w-full items-center gap-1 text-left"
         >
-          <ChevronToggle expanded={expanded} className="text-faint" />
           <span className="text-xs font-medium text-faint">Thinking</span>
+          <ChevronToggle expanded={expanded} className="text-faint" />
         </button>
         {expanded && (
           <ExpandablePre
             text={text}
             mono={false}
-            className="mt-2 pl-5 text-sm italic text-faint"
+            className="mt-2 text-sm italic text-faint"
           />
         )}
       </div>
