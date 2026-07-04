@@ -27,6 +27,29 @@ describe('claudeTranscriptAdapter.detect', () => {
     expect(claudeTranscriptAdapter.detect(lines)).toBeGreaterThan(0.8)
   })
 
+  it('ignores meta lines when scoring resumed sessions', () => {
+    const score = claudeTranscriptAdapter.detect([
+      line({ type: 'last-prompt', leafUuid: 'x', sessionId: 's' }),
+      line({ type: 'mode', mode: 'normal', sessionId: 's' }, 2),
+      line({ type: 'permission-mode', permissionMode: 'bypassPermissions' }, 3),
+      line({ type: 'file-history-snapshot', messageId: 'm', snapshot: {} }, 4),
+      line({ type: 'attachment', uuid: 'a-1', attachment: {} }, 5),
+      line({ type: 'attachment', uuid: 'a-2', attachment: {} }, 6),
+      line({ type: 'ai-title', title: 't' }, 7),
+      line({
+        type: 'user',
+        uuid: 'user-1',
+        message: { role: 'user', content: 'Hello' },
+      }, 8),
+      line({
+        type: 'assistant',
+        uuid: 'asst-1',
+        message: { role: 'assistant', content: [{ type: 'text', text: 'Hi' }] },
+      }, 9),
+    ])
+    expect(score).toBeGreaterThanOrEqual(0.5)
+  })
+
   it('returns zero for unrelated JSONL', () => {
     const score = claudeTranscriptAdapter.detect([
       line({ foo: 'bar' }),

@@ -218,20 +218,42 @@ export function extractClaudeEventMeta(
   return meta
 }
 
+const CLAUDE_META_TYPES = new Set([
+  'attachment',
+  'ai-title',
+  'file-history-snapshot',
+  'last-prompt',
+  'mode',
+  'permission-mode',
+  'system',
+  'summary',
+])
+
 export const claudeTranscriptAdapter: SessionAdapter = {
   detect(samples: ParsedLine[]): number {
     if (samples.length === 0) return 0
     let hits = 0
+    let considered = 0
+    let metaLines = 0
     for (const sample of samples) {
-      if (!isRecord(sample.data)) continue
+      if (!isRecord(sample.data)) {
+        considered++
+        continue
+      }
       const type = getString(sample.data, 'type')
+      if (type && CLAUDE_META_TYPES.has(type)) {
+        metaLines++
+        continue
+      }
+      considered++
       const uuid = getString(sample.data, 'uuid')
       const hasMessage = isRecord(sample.data.message)
       if ((type === 'user' || type === 'assistant') && uuid && hasMessage) {
         hits++
       }
     }
-    return hits / samples.length
+    if (considered === 0) return metaLines > 0 ? 1 : 0
+    return hits / considered
   },
 
   parse(lines: ParsedLine[], fileName: string): ExplorerSession {
