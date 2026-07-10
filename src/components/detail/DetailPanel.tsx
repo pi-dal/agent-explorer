@@ -56,7 +56,7 @@ export function DetailPanel() {
   }
 
   return (
-    <div className="flex h-full flex-col bg-surface">
+    <div className="flex h-full flex-col bg-background">
       <div className={`flex items-center gap-1 px-1 ${sectionDivider}`}>
         <TabButton active={tab === 'session'} onClick={() => setTab('session')}>
           Session

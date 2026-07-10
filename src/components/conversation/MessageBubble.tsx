@@ -16,10 +16,10 @@ export function UserBubble({ item, selected, onSelect }: MessageBubbleProps) {
       <div
         role="button"
         onClick={() => { onSelect(item) }}
-        className={`max-w-[85%] rounded-2xl rounded-br-md px-4 py-2.5 text-left text-foreground border ${
+        className={`max-w-[85%] rounded-2xl rounded-br-md px-4 py-2.5 text-left text-primary border ${
           selected
-            ? `bg-surface-elevated ${selectedRing}`
-            : 'bg-surface-elevated border-transparent'
+            ? `bg-message-bubble ${selectedRing}`
+            : 'bg-message-bubble border-transparent'
         }`}
       >
         <Markdown source={text} />
@@ -36,10 +36,8 @@ export function AssistantBubble({ item, selected, onSelect }: MessageBubbleProps
       <div
         role="button"
         onClick={() => { onSelect(item) }}
-        className={`px-2 py-1 rounded-lg text-left text-foreground border ${
-          selected
-            ? `border-accent-border ${selectedRing}`
-            : 'border-transparent'
+        className={`px-2 py-1 rounded-lg text-left text-primary border ${
+          selected ? selectedRing : 'border-transparent'
         }`}
       >
         <Markdown source={text} />
@@ -54,8 +52,8 @@ export function SystemMessage({ item, selected, onSelect }: MessageBubbleProps) 
       <button
         type="button"
         onClick={() => { onSelect(item) }}
-        className={`max-w-[90%] rounded-lg border border-dashed px-3 py-2 text-center text-xs text-muted-foreground ${
-          selected ? selectedRing : 'border-border-subtle'
+        className={`max-w-[90%] rounded-lg border border-dashed px-3 py-2 text-center text-xs text-secondary ${
+          selected ? selectedRing : 'border-separator-strong'
         }`}
       >
         <span className="font-medium uppercase tracking-wide">System</span>

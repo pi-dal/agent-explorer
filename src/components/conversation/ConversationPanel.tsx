@@ -159,7 +159,7 @@ export function ConversationPanel() {
   }
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col bg-under-page-background">
       <div className={panelHeader}>
         Conversation · {items.length}
         {items.length !== allItems.length ? ` / ${allItems.length}` : ''} messages ·{' '}
@@ -186,11 +186,11 @@ export function ConversationPanel() {
               >
                 {row.kind === 'turn' ? (
                   <div className="flex items-center gap-3 px-4 py-3">
-                    <div className={`h-px flex-1 bg-divider`} />
-                    <span className="text-[10px] font-semibold uppercase tracking-widest text-faint">
+                    <div className={`h-px flex-1 bg-separator`} />
+                    <span className="text-[10px] font-semibold uppercase tracking-widest text-tertiary">
                       Turn {row.turnIndex}
                     </span>
-                    <div className={`h-px flex-1 bg-divider`} />
+                    <div className={`h-px flex-1 bg-separator`} />
                   </div>
                 ) : (
                   <ConversationMessage

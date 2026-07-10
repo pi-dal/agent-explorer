@@ -6,7 +6,7 @@ import { useSettingsStore } from '../../store/settingsStore'
 
 function SettingsSection({ title }: { title: string }) {
   return (
-    <div className={`px-3 py-2 text-[10px] text-faint font-semibold uppercase tracking-wider ${sectionDivider}`}>
+    <div className={`px-3 py-2 text-[10px] text-tertiary font-semibold uppercase tracking-wider ${sectionDivider}`}>
       {title}
     </div>
   )
@@ -24,7 +24,7 @@ function SettingToggle({
   onChange: (checked: boolean) => void
 }) {
   return (
-    <label className="flex cursor-pointer items-start gap-2 px-3 py-2 hover:bg-hover">
+    <label className="flex cursor-pointer items-start gap-2 px-3 py-2 hover:bg-overlay">
       <input
         type="checkbox"
         checked={checked}
@@ -32,8 +32,8 @@ function SettingToggle({
         className="mt-0.5"
       />
       <span>
-        <span className="block text-xs font-medium text-foreground">{label}</span>
-        <span className="block text-[10px] text-muted-foreground">{description}</span>
+        <span className="block text-xs font-medium text-primary">{label}</span>
+        <span className="block text-[10px] text-secondary">{description}</span>
       </span>
     </label>
   )

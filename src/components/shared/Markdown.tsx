@@ -38,9 +38,9 @@ const components: Components = {
   strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
   em: ({ children }) => <em className="italic">{children}</em>,
   del: ({ children }) => <del className="opacity-70">{children}</del>,
-  hr: () => <hr className="my-3 border-border" />,
+  hr: () => <hr className="my-3 border-separator" />,
   blockquote: ({ children }) => (
-    <blockquote className="my-2 border-l-2 border-border-subtle pl-3 text-muted-foreground">
+    <blockquote className="my-2 border-l-2 border-separator-strong pl-3 text-secondary">
       {children}
     </blockquote>
   ),
@@ -51,13 +51,13 @@ const components: Components = {
       return <code className={`font-mono ${className ?? ''}`}>{children}</code>
     }
     return (
-      <code className="rounded border border-border bg-surface-elevated px-1 py-0.5 font-mono text-[0.85em]">
+      <code className="rounded border border-separator bg-background px-1 py-0.5 font-mono text-[0.85em]">
         {children}
       </code>
     )
   },
   pre: ({ children }) => (
-    <pre className="my-2 overflow-auto rounded-lg border border-border bg-surface px-3 py-2 text-xs leading-relaxed">
+    <pre className="my-2 overflow-auto rounded-lg border border-separator bg-background px-3 py-2 text-xs leading-relaxed">
       {children}
     </pre>
   ),
@@ -67,11 +67,11 @@ const components: Components = {
     </div>
   ),
   th: ({ children }) => (
-    <th className="border border-border bg-surface-elevated px-2 py-1 text-left font-semibold">
+    <th className="border border-separator bg-background px-2 py-1 text-left font-semibold">
       {children}
     </th>
   ),
-  td: ({ children }) => <td className="border border-border px-2 py-1 align-top">{children}</td>,
+  td: ({ children }) => <td className="border border-separator px-2 py-1 align-top">{children}</td>,
 }
 
 export const Markdown = memo(function Markdown({ source, className }: MarkdownProps) {

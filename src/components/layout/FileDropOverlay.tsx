@@ -75,10 +75,10 @@ export function FileDropOverlay({ children }: { children: ReactNode }) {
       {children}
       {active && (
         <div
-          className="pointer-events-none fixed inset-0 z-50 p-1 flex items-center justify-center bg-accent-border/10"
+          className="pointer-events-none fixed inset-0 z-50 p-1 flex items-center justify-center bg-accent-overlay/10"
           aria-hidden={!active}
         >
-          <div className="rounded border-2 border-dashed border-accent-border w-full h-full" />
+          <div className="rounded border-2 border-dashed border-accent-overlay w-full h-full" />
         </div>
       )}
     </>

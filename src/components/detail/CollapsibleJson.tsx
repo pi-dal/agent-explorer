@@ -38,7 +38,7 @@ function JsonNode({
     return (
       <div style={depth > 1 ? { paddingLeft: LEVEL_INDENT } : undefined} className="font-mono text-xs leading-5">
         {prefix}
-        <span className="text-muted-foreground">null</span>
+        <span className="text-secondary">null</span>
       </div>
     )
   }
@@ -77,7 +77,7 @@ function JsonNode({
       return (
         <div style={depth > 1 ? { paddingLeft: LEVEL_INDENT } : undefined} className="font-mono text-xs leading-5">
           {prefix}
-          <span className="text-muted-foreground">[]</span>
+          <span className="text-secondary">[]</span>
         </div>
       )
     }
@@ -89,8 +89,8 @@ function JsonNode({
           className={`inline-flex items-center gap-1 text-left ${textExpandButton}`}
         >
           {prefix}
-          <ChevronToggle expanded={expanded} className="text-muted-foreground" />
-          <span className="text-muted-foreground">Array[{value.length}]</span>
+          <ChevronToggle expanded={expanded} className="text-secondary" />
+          <span className="text-secondary">Array[{value.length}]</span>
         </button>
         {expanded &&
           value.map((item, index) => (
@@ -112,7 +112,7 @@ function JsonNode({
       return (
         <div style={depth > 1 ? { paddingLeft: LEVEL_INDENT } : undefined} className="font-mono text-xs leading-5">
           {prefix}
-          <span className="text-muted-foreground">{'{}'}</span>
+          <span className="text-secondary">{'{}'}</span>
         </div>
       )
     }
@@ -125,8 +125,8 @@ function JsonNode({
             className={`inline-flex items-center gap-1 text-left ${textExpandButton}`}
           >
             {prefix}
-            <ChevronToggle expanded={expanded} className="text-muted-foreground" />
-            <span className="text-muted-foreground">Object({entries.length})</span>
+            <ChevronToggle expanded={expanded} className="text-secondary" />
+            <span className="text-secondary">Object({entries.length})</span>
           </button>
         )}
         {(depth === 0 || expanded) &&

@@ -69,7 +69,7 @@ export function ToolCallCard({
             />
           ) : (
             <Wrench
-              className="shrink-0 text-muted-foreground"
+              className="shrink-0 text-secondary"
               size={14}
               strokeWidth={1.75}
               aria-hidden
@@ -77,16 +77,16 @@ export function ToolCallCard({
           )}
           <span
             className={`text-xs font-medium font-mono ${
-              pairHighlighted ? 'text-body' : 'text-faint'
+              pairHighlighted ? 'text-primary' : 'text-tertiary'
             }`}
           >
             {isResult ? 'Result' : toolName}
           </span>
-          {shortId && <span className="text-xs font-mono text-faint">({shortId})</span>}
-          <ChevronToggle expanded={expanded} className="text-faint" />
+          {shortId && <span className="text-xs font-mono text-tertiary">({shortId})</span>}
+          <ChevronToggle expanded={expanded} className="text-tertiary" />
         </button>
         <AnimatedExpander expanded={expanded}>
-          <ExpandablePre text={text} className="rounded bg-surface mx-1 my-1 px-3 py-2 border border-border" />
+          <ExpandablePre text={text} className="rounded bg-background mx-1 my-1 px-3 py-2 border border-separator" />
         </AnimatedExpander>
       </div>
     </div>

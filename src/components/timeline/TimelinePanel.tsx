@@ -111,7 +111,7 @@ export function TimelinePanel() {
   }
 
   return (
-    <div className="flex h-full flex-col bg-surface">
+    <div className="flex h-full flex-col bg-background">
       <div className={panelHeader}>
         Timeline · {events.length}
         {events.length !== allEvents.length ? ` / ${allEvents.length}` : ''} events

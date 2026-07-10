@@ -48,15 +48,15 @@ export function StatusBar() {
     (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
 
   return (
-    <header className="flex h-11 shrink-0 items-center gap-2 border-b border-border bg-surface px-1.5">
-      <span className="px-2 text-sm font-semibold text-foreground">Agent Explorer</span>
+    <header className="flex h-11 shrink-0 items-center gap-2 border-b border-separator bg-background px-1.5">
+      <span className="px-2 text-sm font-semibold text-primary">Agent Explorer</span>
 
       <div className="flex gap-1">
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={isLoading}
-          className="rounded bg-chrome px-2.5 py-1 text-xs font-medium text-chrome-foreground hover:opacity-80 disabled:opacity-50"
+          className="rounded bg-accent px-2.5 py-1 text-xs font-medium text-on-accent hover:bg-accent-overlay disabled:opacity-50"
         >
           Open
         </button>
@@ -81,13 +81,13 @@ export function StatusBar() {
 
       <div className="flex items-baseline gap-1">
         {session && (
-          <span className="rounded bg-chrome-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+          <span className="rounded bg-overlay px-2 py-0.5 text-[10px] font-medium text-secondary">
             {session.fileType}
           </span>
         )}
 
         {session && (
-          <span className="truncate text-xs text-muted-foreground">{session.fileName}</span>
+          <span className="truncate text-xs text-secondary">{session.fileName}</span>
         )}
 
         {session && session.parseWarnings.length > 0 && (

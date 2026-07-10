@@ -6,115 +6,91 @@
   --font-sans: system-ui, 'Segoe UI', Roboto, sans-serif;
   --font-mono: ui-monospace, Consolas, monospace;
 
-  /* Surfaces & chrome */
-  --color-background: var(--ui-background);
-  --color-foreground: var(--ui-foreground);
-  --color-muted-foreground: var(--ui-muted-foreground);
-  --color-faint: var(--ui-faint);
-  --color-border: var(--ui-border);
-  --color-border-subtle: var(--ui-border-subtle);
-  --color-surface: var(--ui-surface);
-  --color-surface-elevated: var(--ui-surface-elevated);
-  --color-surface-overlay: var(--ui-surface-overlay);
-  --color-hover: var(--ui-hover);
-  --color-chrome: var(--ui-chrome);
-  --color-chrome-foreground: var(--ui-chrome-foreground);
-  --color-chrome-muted: var(--ui-chrome-muted);
-  --color-divider: var(--ui-divider);
+  /* ── Generic ── */
+  --color-under-page-background: var(--color-zinc-50);
+  --color-background: var(--color-white);
+  --color-overlay: color-mix(in oklab, var(--color-zinc-900) 4%, transparent);
+  --color-overlay-emphasized: color-mix(in oklab, var(--color-zinc-900) 10%, transparent);
+  --color-separator: var(--color-zinc-200);
+  --color-separator-strong: var(--color-zinc-300);
+  --color-accent: var(--color-zinc-900);
+  --color-on-accent: var(--color-white);
+  --color-accent-overlay: color-mix(in oklab, var(--color-zinc-900) 70%, transparent);
+  --color-primary: var(--color-zinc-900);
+  --color-secondary: var(--color-zinc-500);
+  --color-tertiary: var(--color-zinc-400);
 
-  /* Accent */
-  --color-accent: var(--ui-accent);
-  --color-accent-foreground: var(--ui-accent-foreground);
-  --color-accent-border: var(--color-blue-400);
-  --color-accent-subtle: var(--ui-accent-subtle);
+  /* ── Special: conversation ── */
+  --color-message-bubble: color-mix(in oklab, var(--color-zinc-200) 70%, transparent);
 
-  /* Timeline role dots */
-  --color-role-user: var(--color-accent);
+  /* ── Special: status ── */
+  --color-danger: var(--color-red-500);
+  --color-danger-border: var(--color-red-200);
+  --color-success: var(--color-emerald-600);
+  --color-warning: var(--color-amber-600);
+  --color-warning-text: var(--color-amber-800);
+  --color-warning-background: var(--color-amber-100);
+  --color-warning-border: var(--color-amber-200);
+  --color-warning-overlay: var(--color-amber-200);
+
+  /* ── Special: syntax ── */
+  --color-syntax-key: var(--color-blue-600);
+  --color-syntax-number: var(--color-amber-600);
+  --color-syntax-string: var(--color-emerald-700);
+
+  /* ── Special: timeline roles ── */
+  --color-role-user: var(--color-zinc-900);
   --color-role-assistant: var(--color-orange-500);
   --color-role-thinking: var(--color-amber-500);
   --color-role-tool: var(--color-emerald-500);
   --color-role-system: var(--color-zinc-400);
   --color-role-meta: var(--color-zinc-300);
-
-  /* Status & feedback */
-  --color-danger: var(--color-red-500);
-  --color-danger-border: var(--ui-danger-border);
-  --color-success: var(--ui-success);
-  --color-warning: var(--ui-warning);
-  --color-warning-foreground: var(--ui-warning-foreground);
-  --color-warning-muted: var(--ui-warning-muted);
-  --color-warning-border: var(--ui-warning-border);
-  --color-warning-hover: var(--ui-warning-hover);
-
-  /* JSON syntax */
-  --color-syntax-key: var(--ui-syntax-key);
-  --color-syntax-number: var(--ui-syntax-number);
-  --color-syntax-string: var(--ui-syntax-string);
 }
 
 :root {
   color-scheme: light;
-
-  --ui-background: var(--color-zinc-50);
-  --ui-foreground: var(--color-zinc-900);
-  --ui-muted-foreground: var(--color-zinc-500);
-  --ui-faint: var(--color-zinc-400);
-  --ui-border: var(--color-zinc-200);
-  --ui-border-subtle: var(--color-zinc-300);
-  --ui-surface: #ffffff;
-  --ui-surface-elevated: color-mix(in oklab, var(--color-zinc-200) 70%, transparent);
-  --ui-surface-overlay: rgb(255 255 255 / 0.8);
-  --ui-hover: var(--color-zinc-100);
-  --ui-chrome: var(--color-zinc-900);
-  --ui-chrome-foreground: #ffffff;
-  --ui-chrome-muted: var(--color-zinc-100);
-  --ui-divider: var(--color-zinc-200);
-  --ui-accent: var(--color-zinc-900);
-  --ui-accent-foreground: #ffffff;
-  --ui-accent-subtle: color-mix(in oklab, var(--color-zinc-900) 10%, transparent);
-  --ui-danger-border: var(--color-red-200);
-  --ui-success: var(--color-emerald-600);
-  --ui-warning: var(--color-amber-600);
-  --ui-warning-foreground: var(--color-amber-800);
-  --ui-warning-muted: var(--color-amber-100);
-  --ui-warning-border: var(--color-amber-200);
-  --ui-warning-hover: var(--color-amber-200);
-  --ui-syntax-key: var(--color-blue-600);
-  --ui-syntax-number: var(--color-amber-600);
-  --ui-syntax-string: var(--color-emerald-700);
 }
 
 :root.dark {
   color-scheme: dark;
 
-  --ui-background: color-mix(in oklab, var(--color-zinc-900) 6%, transparent);
-  --ui-foreground: var(--color-zinc-100);
-  --ui-muted-foreground: var(--color-zinc-400);
-  --ui-faint: var(--color-zinc-500);
-  --ui-border: var(--color-zinc-800);
-  --ui-border-subtle: var(--color-zinc-700);
-  --ui-surface: #000000;
-  --ui-surface-elevated: color-mix(in oklab, var(--color-zinc-800) 80%, transparent);
-  --ui-surface-overlay: rgb(9 9 11 / 0.4);
-  --ui-hover: var(--color-zinc-900);
-  --ui-chrome: var(--color-zinc-100);
-  --ui-chrome-foreground: var(--color-zinc-900);
-  --ui-chrome-muted: var(--color-zinc-800);
-  --ui-divider: var(--color-zinc-800);
-  --ui-accent: var(--color-zinc-100);
-  --ui-accent-foreground: #000000;
-  --ui-accent-subtle: color-mix(in oklab, var(--color-zinc-400) 20%, transparent);
-  --ui-danger-border: rgb(127 29 29 / 0.6);
-  --ui-success: var(--color-emerald-400);
-  --ui-warning: var(--color-amber-400);
-  --ui-warning-foreground: var(--color-amber-200);
-  --ui-warning-muted: rgb(69 26 3 / 0.5);
-  --ui-warning-border: rgb(120 53 15 / 0.6);
-  --ui-warning-hover: var(--color-amber-950);
-  --ui-syntax-key: var(--color-blue-400);
-  --ui-syntax-number: var(--color-amber-400);
-  --ui-syntax-string: var(--color-emerald-400);
+  /* ── Generic ── */
+  --color-under-page-background: var(--color-zinc-950);
+  --color-background: var(--color-black);
+  --color-overlay: color-mix(in oklab, var(--color-zinc-400) 11%, transparent);
+  --color-overlay-emphasized: color-mix(in oklab, var(--color-zinc-400) 20%, transparent);
+  --color-separator: var(--color-zinc-800);
+  --color-separator-strong: var(--color-zinc-700);
+  --color-accent: var(--color-zinc-100);
+  --color-on-accent: var(--color-black);
+  --color-accent-overlay: color-mix(in oklab, var(--color-zinc-100) 80%, transparent);
+  --color-primary: var(--color-zinc-100);
+  --color-secondary: var(--color-zinc-400);
+  --color-tertiary: var(--color-zinc-500);
 
+  /* ── Special: conversation ── */
+  --color-message-bubble: color-mix(in oklab, var(--color-zinc-800) 80%, transparent);
+
+  /* ── Special: status ── */
+  --color-danger: var(--color-red-500);
+  --color-danger-border: color-mix(in oklab, var(--color-red-900) 60%, transparent);
+  --color-success: var(--color-emerald-400);
+  --color-warning: var(--color-amber-400);
+  --color-warning-text: var(--color-amber-200);
+  --color-warning-background: color-mix(in oklab, var(--color-amber-950) 50%, transparent);
+  --color-warning-border: color-mix(in oklab, var(--color-amber-900) 60%, transparent);
+  --color-warning-overlay: var(--color-amber-950);
+
+  /* ── Special: syntax ── */
+  --color-syntax-key: var(--color-blue-400);
+  --color-syntax-number: var(--color-amber-400);
+  --color-syntax-string: var(--color-emerald-400);
+
+  /* ── Special: timeline roles ── */
+  --color-role-user: var(--color-zinc-100);
+  --color-role-assistant: var(--color-orange-500);
+  --color-role-thinking: var(--color-amber-500);
+  --color-role-tool: var(--color-emerald-500);
   --color-role-system: var(--color-zinc-500);
   --color-role-meta: var(--color-zinc-600);
 }
@@ -129,7 +105,6 @@ body,
 
 body {
   font-family: var(--font-sans);
-  @apply bg-background text-foreground;
 }
 
 * {
@@ -190,12 +165,12 @@ body {
   left: 50%;
   width: 1px;
   transform: translateX(-50%);
-  background-color: var(--ui-divider);
+  background-color: var(--color-separator);
   transition: width 150ms;
 }
 
 .split-handle:hover::after,
 .split-handle-active::after {
   width: 3px;
-  background-color: var(--color-accent-border);
+  background-color: var(--color-accent-overlay);
 }

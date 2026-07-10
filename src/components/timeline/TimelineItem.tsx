@@ -29,12 +29,12 @@ export function TimelineItem({
       onKeyDown={onKeyDown}
       className={`flex h-full w-full min-h-0 shrink-0 items-center gap-2 overflow-hidden border-l-2 px-2 text-left text-xs ${
         selected
-          ? 'border-accent bg-accent-subtle'
-          : 'border-transparent hover:bg-hover'
+          ? 'border-accent bg-overlay-emphasized'
+          : 'border-transparent hover:bg-overlay'
       }`}
     >
       <span
-        className={`w-8 shrink-0 font-mono ${(requestHighlighted || selected) ? 'text-foreground' : 'text-faint'}`}
+        className={`w-8 shrink-0 font-mono ${(requestHighlighted || selected) ? 'text-primary' : 'text-tertiary'}`}
       >
         #{event.lineIndex}
       </span>
@@ -42,10 +42,10 @@ export function TimelineItem({
         className={`h-2 w-2 shrink-0 rounded-full ${categoryDotClass(event.category)}`}
       />
       <span className="flex h-8 min-w-0 flex-1 flex-col justify-center overflow-hidden">
-        <span className={`block h-4 truncate leading-4 font-medium text-foreground`}>
+        <span className={`block h-4 truncate leading-4 font-medium text-primary`}>
           {event.label}
         </span>
-        <span className={`block h-4 truncate leading-4 text-faint`}>
+        <span className={`block h-4 truncate leading-4 text-tertiary`}>
           {event.preview || '\u00a0'}
         </span>
       </span>
