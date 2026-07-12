@@ -3,7 +3,7 @@
 Agent Explorer uses two GitHub Actions workflows:
 
 - `Desktop CI` validates the frontend and builds unsigned desktop artifacts on pull requests, pushes to `main`, and manual runs.
-- `Desktop Release` creates one draft release, uploads every platform bundle to it, and publishes the release only after all platform jobs succeed. It runs when a `vX.Y.Z` tag is pushed, or when an existing tag is supplied manually.
+- `Desktop Release` creates one draft release, uploads every platform bundle to it, and publishes the release only after all platform jobs succeed. It runs when a `vX.Y.Z` tag is pushed, or when an existing tag is supplied manually. It serializes same-tag runs and checks all macOS/updater signing secrets before creating a draft release.
 
 ## Versioning
 
