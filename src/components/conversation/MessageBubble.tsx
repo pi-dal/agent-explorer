@@ -1,6 +1,7 @@
 import { selectedRing } from '../../styles/uiClasses'
 import type { ConversationListItem } from '../../core/types'
 import { Markdown } from '../shared/Markdown'
+import { ExpandablePre } from '../shared/ExpandablePre'
 
 interface MessageBubbleProps {
   item: ConversationListItem
@@ -47,18 +48,23 @@ export function AssistantBubble({ item, selected, onSelect }: MessageBubbleProps
 }
 
 export function SystemMessage({ item, selected, onSelect }: MessageBubbleProps) {
+  const text = item.block?.text ?? item.event.preview
   return (
-    <div className="flex justify-center px-4 py-2">
-      <button
-        type="button"
-        onClick={() => { onSelect(item) }}
-        className={`max-w-[90%] rounded-lg border border-dashed px-3 py-2 text-center text-xs text-secondary ${
+    <div className="flex justify-start px-4 py-1.5">
+      <div
+        className={`w-full rounded border px-3 py-2 text-left text-xs text-secondary ${
           selected ? selectedRing : 'border-separator-strong'
         }`}
       >
-        <span className="font-medium uppercase tracking-wide">System</span>
-        <p className="mt-1 whitespace-pre-wrap">{item.event.preview}</p>
-      </button>
+        <button
+          type="button"
+          onClick={() => { onSelect(item) }}
+          className="block w-full text-left font-mono text-[10px] font-medium uppercase text-tertiary"
+        >
+          {item.event.label}
+        </button>
+        <ExpandablePre text={text} mono={false} className="mt-1 text-primary" />
+      </div>
     </div>
   )
 }

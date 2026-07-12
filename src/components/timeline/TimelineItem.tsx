@@ -1,6 +1,7 @@
 import type { KeyboardEvent } from 'react'
 import type { TimelineEvent } from '../../core/types'
 import { categoryDotClass } from './categoryStyle'
+import { Bot, Braces, Circle, TerminalSquare } from 'lucide-react'
 
 export const TIMELINE_ITEM_HEIGHT = 44
 
@@ -19,6 +20,18 @@ export function TimelineItem({
   onSelect,
   onKeyDown,
 }: TimelineItemProps) {
+  const isBranch = event.raw
+    && typeof event.raw === 'object'
+    && !Array.isArray(event.raw)
+    && (event.raw as Record<string, unknown>).entry_type === 'branch'
+  const KindIcon = event.kind === 'runtime'
+    ? TerminalSquare
+    : event.kind === 'prompt_trace'
+      ? Braces
+      : event.kind === 'subagent_event' || isBranch
+        ? Bot
+        : Circle
+
   return (
     <button
       type="button"
@@ -38,9 +51,24 @@ export function TimelineItem({
       >
         #{event.lineIndex}
       </span>
-      <span
-        className={`h-2 w-2 shrink-0 rounded-full ${categoryDotClass(event.category)}`}
-      />
+      {event.kind === 'runtime' || event.kind === 'prompt_trace' || event.kind === 'subagent_event' || isBranch ? (
+        <KindIcon
+          size={13}
+          strokeWidth={1.75}
+          className={`shrink-0 ${
+            event.kind === 'runtime'
+              ? 'text-role-system'
+              : event.kind === 'prompt_trace'
+                ? 'text-role-thinking'
+                : 'text-role-tool'
+          }`}
+          aria-hidden
+        />
+      ) : (
+        <span
+          className={`h-2 w-2 shrink-0 rounded-full ${categoryDotClass(event.category)}`}
+        />
+      )}
       <span className="flex h-8 min-w-0 flex-1 flex-col justify-center overflow-hidden">
         <span className={`block h-4 truncate leading-4 font-medium text-primary`}>
           {event.label}

@@ -77,10 +77,25 @@ export interface ConversationListItem {
 export interface ExplorerSession {
   fileType: string
   fileName: string
+  sourcePath?: string
+  sourceFilePath?: string
+  resources?: Record<string, string>
   meta: SessionMeta
   events: TimelineEvent[]
   conversationItems: ConversationListItem[]
   parseWarnings: ParseWarning[]
+}
+
+export interface WorkspaceStats {
+  candidateCount: number
+  loadedCount: number
+  skippedCount: number
+  skippedFiles: Array<{ path: string; reason: string }>
+}
+
+export interface WorkspaceProgress {
+  completed: number
+  total: number
 }
 
 export interface ParsedLine {

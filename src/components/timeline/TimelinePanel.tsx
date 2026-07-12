@@ -1,13 +1,15 @@
-import { useRef, useEffect, useMemo, useCallback, type KeyboardEvent } from 'react'
+import { useRef, useEffect, useMemo, useCallback, useState, type KeyboardEvent } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { emptyState, emptyStateXs, panelHeader } from '../../styles/uiClasses'
 import { filterTimelineEvents } from '../../core/filter'
 import type { TimelineEvent } from '../../core/types'
+import { filterXiaoBaTimeline, isXiaoBaSession, type XiaoBaTimelineScope } from '../../core/xiaoba'
 import { useSessionStore } from '../../store/sessionStore'
 import { useSettingsStore } from '../../store/settingsStore'
 import { useSpringScrollToFn } from '../shared/useSpringScrollToFn'
 import { TIMELINE_ITEM_HEIGHT, TimelineItem } from './TimelineItem'
 import { TimelineCategoryFilter } from './TimelineCategoryFilter'
+import { XiaoBaTimelineFilter } from './XiaoBaTimelineFilter'
 import {
   findTimelineEventIndex,
   resolveTimelineNavigationIndex,
@@ -25,7 +27,9 @@ export function TimelinePanel() {
   const hideToolCalls = useSettingsStore((s) => s.hideToolCalls)
   const highlightSameRequest = useSettingsStore((s) => s.highlightSameRequest)
   const parentRef = useRef<HTMLDivElement>(null)
+  const [xiaobaScope, setXiaoBaScope] = useState<XiaoBaTimelineScope>('all')
   const selectedId = selection?.event?.id
+  const isXiaoBa = isXiaoBaSession(session)
 
   const allEvents = session?.events ?? EMPTY_EVENTS
 
@@ -33,9 +37,8 @@ export function TimelinePanel() {
     if (!highlightSameRequest || !selection) return undefined
     return selection.event?.requestId
   }, [highlightSameRequest, selection])
-  const events = useMemo(
-    () =>
-      filterTimelineEvents(allEvents, {
+  const filteredEvents = useMemo(
+    () => filterTimelineEvents(allEvents, {
         searchQuery,
         timelineCategoryFilter,
         hideSystem,
@@ -43,12 +46,23 @@ export function TimelinePanel() {
       }),
     [allEvents, searchQuery, timelineCategoryFilter, hideSystem, hideToolCalls],
   )
+  const events = useMemo(
+    () => isXiaoBa ? filterXiaoBaTimeline(filteredEvents, xiaobaScope) : filteredEvents,
+    [filteredEvents, isXiaoBa, xiaobaScope],
+  )
+  const sessionKey = session
+    ? `${session.sourceFilePath ?? session.sourcePath ?? session.fileName}:${session.meta.sessionId ?? ''}`
+    : 'empty'
+
+  useEffect(() => {
+    setXiaoBaScope('all')
+  }, [session?.fileName])
 
   const scrollToFn = useSpringScrollToFn()
   const virtualizer = useVirtualizer({
     count: events.length,
     getScrollElement: () => parentRef.current,
-    getItemKey: (index) => events[index]?.id ?? String(index),
+    getItemKey: (index) => `${sessionKey}:${events[index]?.id ?? index}`,
     estimateSize: () => TIMELINE_ITEM_HEIGHT,
     gap: 0,
     overscan: 12,
@@ -116,7 +130,15 @@ export function TimelinePanel() {
         Timeline · {events.length}
         {events.length !== allEvents.length ? ` / ${allEvents.length}` : ''} events
       </div>
-      <TimelineCategoryFilter />
+      {isXiaoBa ? (
+        <XiaoBaTimelineFilter
+          events={filteredEvents}
+          value={xiaobaScope}
+          onChange={setXiaoBaScope}
+        />
+      ) : (
+        <TimelineCategoryFilter />
+      )}
       <div
         ref={parentRef}
         tabIndex={0}
@@ -140,7 +162,7 @@ export function TimelinePanel() {
               const event = events[virtualRow.index]!
               return (
                 <div
-                  key={event.id}
+                  key={`${sessionKey}:${event.id}`}
                   style={{
                     position: 'absolute',
                     top: virtualRow.start,

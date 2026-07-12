@@ -10,8 +10,10 @@ import { CollapsibleJson } from './CollapsibleJson'
 import { EventSummary } from './EventSummary'
 import { SessionMetaPanel } from './SessionMetaPanel'
 import { UsagePanel } from './UsagePanel'
+import { XiaoBaExecutionPanel } from './XiaoBaExecutionPanel'
+import { isXiaoBaSession } from '../../core/xiaoba'
 
-type DetailTab = 'session' | 'summary' | 'usage' | 'raw'
+type DetailTab = 'session' | 'execution' | 'summary' | 'usage' | 'raw'
 
 export function DetailPanel() {
   const session = useSessionStore((s) => s.session)
@@ -22,20 +24,21 @@ export function DetailPanel() {
   const selectedEventId = selection?.event?.id
   const hasEvent = !!(selection?.event)
   const hasUsage = !!(selection?.event?.usage)
+  const hasExecution = isXiaoBaSession(session) && hasEvent
 
   // FIXME: we don't need these `useEffect` hooks maybe.
   useEffect(() => {
     setLastSelectedEventId(selectedEventId)
     if (hasEvent) {
       if (tab === 'session' && lastSelectedEventId !== selectedEventId) {
-        setTab('summary');
+        setTab(hasExecution ? 'execution' : 'summary');
       }
     } else {
-      if (tab === 'summary' || tab === 'raw') {
+      if (tab === 'execution' || tab === 'summary' || tab === 'raw') {
         setTab('session')
       }
     }
-  }, [lastSelectedEventId, setLastSelectedEventId, tab, selectedEventId, hasEvent])
+  }, [lastSelectedEventId, setLastSelectedEventId, tab, selectedEventId, hasEvent, hasExecution])
 
   useEffect(() => {
     if (tab === 'usage' && !hasUsage) {
@@ -61,6 +64,15 @@ export function DetailPanel() {
         <TabButton active={tab === 'session'} onClick={() => setTab('session')}>
           Session
         </TabButton>
+        {isXiaoBaSession(session) && (
+          <TabButton
+            active={tab === 'execution'}
+            onClick={() => setTab('execution')}
+            disabled={!hasExecution}
+          >
+            Execution
+          </TabButton>
+        )}
         <TabButton
           active={tab === 'summary'}
           onClick={() => setTab('summary')}
@@ -85,6 +97,9 @@ export function DetailPanel() {
       </div>
       <div className="flex-1 overflow-auto p-3">
         {tab === 'session' && <SessionMetaPanel session={session} />}
+        {tab === 'execution' && hasExecution && selection?.event && (
+          <XiaoBaExecutionPanel event={selection.event} />
+        )}
         {tab === 'summary' && hasEvent && <EventSummary selection={selection} />}
         {tab === 'usage' && hasUsage && <UsagePanel selection={selection} />}
         {tab === 'raw' && selection?.event && <CollapsibleJson value={selection.event.raw} />}

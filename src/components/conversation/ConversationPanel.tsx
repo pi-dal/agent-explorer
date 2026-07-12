@@ -33,7 +33,7 @@ function estimateRowSize(
     case 'tool_call':
       return 30
     case 'system':
-      return 80
+      return Math.min(220, 64 + Math.ceil((item.block?.text.length ?? 0) / 72) * 18)
     default:
       return 64
   }
@@ -73,6 +73,9 @@ export function ConversationPanel() {
   const parentRef = useRef<HTMLDivElement>(null)
 
   const allItems = session?.conversationItems ?? EMPTY_ITEMS
+  const sessionKey = session
+    ? `${session.sourceFilePath ?? session.sourcePath ?? session.fileName}:${session.meta.sessionId ?? ''}`
+    : 'empty'
   const searchQuery = useSettingsStore((s) => s.searchQuery)
   const hideSystem = useSettingsStore((s) => s.hideSystem)
   const hideThinking = useSettingsStore((s) => s.hideThinking)
@@ -100,13 +103,13 @@ export function ConversationPanel() {
     items.forEach((item, itemIndex) => {
       const turnIndex = item.event?.turnIndex ?? 0
       if (turnIndex !== lastTurn) {
-        result.push({ kind: 'turn', turnIndex, key: `turn-${turnIndex}` })
+        result.push({ kind: 'turn', turnIndex, key: `${sessionKey}:turn-${turnIndex}` })
         lastTurn = turnIndex
       }
-      result.push({ kind: 'item', key: item.id, itemIndex })
+      result.push({ kind: 'item', key: `${sessionKey}:${item.id}`, itemIndex })
     })
     return result
-  }, [items])
+  }, [items, sessionKey])
 
   const scrollToFn = useSpringScrollToFn()
   const virtualizer = useVirtualizer({
@@ -132,7 +135,7 @@ export function ConversationPanel() {
   if (!session) {
     return (
       <div className={`flex h-full items-center justify-center p-4 ${emptyState}`}>
-        Open a Claude Code JSONL file to explore the session
+        Open a supported JSONL file to explore the session
       </div>
     )
   }
@@ -140,7 +143,7 @@ export function ConversationPanel() {
   if (allItems.length === 0) {
     return (
       <div className={`flex h-full items-center justify-center p-4 ${emptyState}`}>
-        No conversation items in this file
+        No readable workflow items in this file
       </div>
     )
   }
@@ -161,8 +164,8 @@ export function ConversationPanel() {
   return (
     <div className="flex h-full flex-col bg-under-page-background">
       <div className={panelHeader}>
-        Conversation · {items.length}
-        {items.length !== allItems.length ? ` / ${allItems.length}` : ''} messages ·{' '}
+        {session.fileType.startsWith('XiaoBa') ? 'Execution flow' : 'Conversation'} · {items.length}
+        {items.length !== allItems.length ? ` / ${allItems.length}` : ''} items ·{' '}
         {session.meta.turnCount} turns
       </div>
       <div ref={parentRef} className="flex-1 overflow-auto py-3">
@@ -188,7 +191,7 @@ export function ConversationPanel() {
                   <div className="flex items-center gap-3 px-4 py-3">
                     <div className={`h-px flex-1 bg-separator`} />
                     <span className="text-[10px] font-semibold uppercase tracking-widest text-tertiary">
-                      Turn {row.turnIndex}
+                      {row.turnIndex > 0 ? `Turn ${row.turnIndex}` : 'Workflow'}
                     </span>
                     <div className={`h-px flex-1 bg-separator`} />
                   </div>
