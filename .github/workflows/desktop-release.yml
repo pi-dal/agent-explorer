@@ -67,7 +67,10 @@ jobs:
           TAG: ${{ steps.release.outputs.tag }}
         shell: bash
         run: |
-          release_id="$(gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${TAG}" --jq '.id' 2>/dev/null || true)"
+          release_id=""
+          if ! release_id="$(gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${TAG}" --jq '.id' 2>/dev/null)"; then
+            release_id=""
+          fi
           if [[ -z "$release_id" ]]; then
             release_id="$(gh api --method POST "repos/${GITHUB_REPOSITORY}/releases" \
               -f tag_name="$TAG" \
