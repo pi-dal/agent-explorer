@@ -3,7 +3,7 @@
 Agent Explorer uses two GitHub Actions workflows:
 
 - `Desktop CI` validates the frontend and builds unsigned desktop artifacts on pull requests, pushes to `main`, and manual runs.
-- `Desktop Release` creates one draft release, uploads every platform bundle to it, and publishes the release only after all platform jobs succeed. It runs when a `vX.Y.Z` tag is pushed, or when an existing tag is supplied manually. It serializes same-tag runs and checks all macOS/updater signing secrets before creating a draft release.
+- `Desktop Release` creates one draft release, uploads every platform bundle to it, and publishes the release only after all platform jobs succeed. It runs when a `vX.Y.Z` tag is pushed, or when an existing tag is supplied manually. It serializes same-tag runs and checks the updater signing secret before creating a draft release.
 
 ## Versioning
 
@@ -25,20 +25,9 @@ Run `pnpm version:check` locally. Release tags must use the same version with a 
 
 CI builds are unsigned and are retained as workflow artifacts. Tag builds are attached to a GitHub Release.
 
-## macOS signing and notarization
+## macOS distribution
 
-Unsigned macOS builds work for local development but are not suitable for public distribution. Configure these repository secrets before publishing a trusted macOS release:
-
-| Secret | Purpose |
-|--------|---------|
-| `APPLE_CERTIFICATE` | Base64-encoded Developer ID Application `.p12` certificate |
-| `APPLE_CERTIFICATE_PASSWORD` | Password used when exporting the `.p12` certificate |
-| `APPLE_SIGNING_IDENTITY` | Developer ID Application certificate identity |
-| `APPLE_ID` | Apple account used for notarization |
-| `APPLE_PASSWORD` | App-specific password for the Apple account |
-| `APPLE_TEAM_ID` | Apple Developer Team ID |
-
-The release workflow passes these values using the environment names expected by the Tauri CLI. Do not store certificate files or credentials in the repository.
+macOS releases are intentionally unsigned and unnotarized, so no Apple credentials are required. Gatekeeper may require users to explicitly approve the app before opening it. Add Developer ID signing and notarization later if trusted macOS distribution becomes necessary; never commit certificate files or Apple credentials.
 
 ## Updater signing
 
