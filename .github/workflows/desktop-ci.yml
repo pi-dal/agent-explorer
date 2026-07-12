@@ -1,0 +1,82 @@
+name: Desktop CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: desktop-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Quality checks
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: jdx/mise-action@v4
+        with:
+          cache: true
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm version:check
+      - run: pnpm lint
+      - run: pnpm test
+      - run: pnpm build
+
+  desktop:
+    name: ${{ matrix.name }}
+    needs: quality
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: macOS ARM64
+            os: macos-15
+            args: --target aarch64-apple-darwin --bundles app,dmg
+            artifact: agent-explorer-macos-arm64
+          - name: macOS Intel
+            os: macos-15-intel
+            args: --target x86_64-apple-darwin --bundles app,dmg
+            artifact: agent-explorer-macos-x64
+          - name: Windows x64
+            os: windows-2025
+            args: --bundles nsis
+            artifact: agent-explorer-windows-x64
+          - name: Linux x64
+            os: ubuntu-24.04
+            args: --bundles deb,appimage
+            artifact: agent-explorer-linux-x64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: jdx/mise-action@v4
+        with:
+          cache: true
+      - name: Install Linux system dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            curl \
+            file \
+            libayatana-appindicator3-dev \
+            libssl-dev \
+            libwebkit2gtk-4.1-dev \
+            libxdo-dev \
+            librsvg2-dev \
+            patchelf \
+            wget
+      - run: pnpm install --frozen-lockfile
+      - uses: tauri-apps/tauri-action@action-v1.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          args: ${{ matrix.args }}
+          uploadWorkflowArtifacts: true
+          workflowArtifactNamePattern: ${{ matrix.artifact }}
