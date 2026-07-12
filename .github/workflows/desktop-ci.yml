@@ -39,10 +39,6 @@ jobs:
             os: macos-15
             args: --target aarch64-apple-darwin --bundles app,dmg
             artifact: agent-explorer-macos-arm64
-          - name: macOS Intel
-            os: macos-15-intel
-            args: --target x86_64-apple-darwin --bundles app,dmg
-            artifact: agent-explorer-macos-x64
           - name: Windows x64
             os: windows-2025
             args: --bundles nsis

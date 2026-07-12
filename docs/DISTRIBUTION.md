@@ -19,7 +19,7 @@ Run `pnpm version:check` locally. Release tags must use the same version with a 
 
 | Platform | Architectures | Bundles |
 |----------|---------------|---------|
-| macOS | Apple Silicon, Intel | `.app`, `.dmg` |
+| macOS | Apple Silicon | `.app`, `.dmg` |
 | Windows | x64 | NSIS `.exe` |
 | Linux | x64 | `.deb`, `.AppImage` |
 
