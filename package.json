@@ -1,10 +1,20 @@
 {
   "name": "agent-explorer",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
+  "author": "pi-dal",
+  "license": "MIT",
+  "homepage": "https://github.com/pi-dal/agent-explorer",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pi-dal/agent-explorer.git"
+  },
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "desktop:dev": "tauri dev",
+    "desktop:build": "tauri build",
+    "version:check": "node scripts/check-version.mjs",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "test": "vitest run",
@@ -15,6 +25,7 @@
     "@rolldown/plugin-babel": "^0.2.3",
     "@tailwindcss/vite": "^4.3.1",
     "@tanstack/react-virtual": "^3.14.3",
+    "@tauri-apps/cli": "^2.11.4",
     "@types/babel__core": "^7.20.5",
     "@types/node": "^24.13.2",
     "@types/react": "^19.2.17",
@@ -34,5 +45,13 @@
     "vitest": "^4.1.9",
     "zustand": "^5.0.14"
   },
-  "packageManager": "pnpm@10.22.0+sha512.bf049efe995b28f527fd2b41ae0474ce29186f7edcb3bf545087bd61fbbebb2bf75362d1307fda09c2d288e1e499787ac12d4fcb617a974718a6051f2eee741c"
+  "packageManager": "pnpm@10.22.0+sha512.bf049efe995b28f527fd2b41ae0474ce29186f7edcb3bf545087bd61fbbebb2bf75362d1307fda09c2d288e1e499787ac12d4fcb617a974718a6051f2eee741c",
+  "dependencies": {
+    "@tauri-apps/api": "~2.11.1",
+    "@tauri-apps/plugin-dialog": "~2.7.1",
+    "@tauri-apps/plugin-fs": "~2.5.1",
+    "@tauri-apps/plugin-opener": "~2.5.4",
+    "@tauri-apps/plugin-process": "~2.3.1",
+    "@tauri-apps/plugin-updater": "~2.10.1"
+  }
 }

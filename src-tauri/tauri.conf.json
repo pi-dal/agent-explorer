@@ -1,0 +1,68 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
+  "productName": "Agent Explorer",
+  "version": "0.1.0",
+  "identifier": "io.github.pi-dal.agent-explorer",
+  "build": {
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:5173",
+    "beforeDevCommand": "pnpm dev",
+    "beforeBuildCommand": "pnpm build"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Agent Explorer",
+        "width": 1280,
+        "height": 800,
+        "minWidth": 960,
+        "minHeight": 600,
+        "center": true,
+        "resizable": true,
+        "fullscreen": false
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; connect-src 'self' https://raw.githubusercontent.com; img-src 'self' asset: http://asset.localhost; style-src 'self' 'unsafe-inline'; script-src 'self'"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "createUpdaterArtifacts": false,
+    "publisher": "pi-dal",
+    "homepage": "https://github.com/pi-dal/agent-explorer",
+    "copyright": "Copyright © 2026 pi-dal",
+    "category": "DeveloperTool",
+    "fileAssociations": [
+      {
+        "ext": ["jsonl", "log"],
+        "name": "Agent session log",
+        "description": "Agent Explorer session log",
+        "role": "Viewer",
+        "rank": "Alternate"
+      }
+    ],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "android": {
+      "debugApplicationIdSuffix": ".debug"
+    }
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEQ0MTVDQzJCMzNDMUVEM0MKUldRODdjRXpLOHdWMUhHSGdRWlJyL01icGlzN2VHTzRHWDJ2UkJsNCtyK05oMTRkb3FYZjd5NTQK",
+      "endpoints": [
+        "https://github.com/pi-dal/agent-explorer/releases/latest/download/latest.json"
+      ],
+      "windows": {
+        "installMode": "passive"
+      }
+    }
+  }
+}

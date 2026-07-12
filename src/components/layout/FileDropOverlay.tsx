@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { useSessionStore } from '../../store/sessionStore'
+import { stopDesktopWorkspace } from '../../platform/desktopWorkspaceController'
 
 function dragContainsFiles(event: DragEvent): boolean {
   return event.dataTransfer?.types.includes('Files') ?? false
@@ -17,7 +18,9 @@ export function FileDropOverlay({ children }: { children: ReactNode }) {
 
   const loadFile = useCallback(
     (file: File) => {
-      void file.text().then((text) => loadText(text, file.name))
+      void stopDesktopWorkspace()
+        .then(() => file.text())
+        .then((text) => loadText(text, file.name))
     },
     [loadText],
   )

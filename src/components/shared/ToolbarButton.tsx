@@ -1,7 +1,7 @@
-import type { HTMLAttributes } from 'react'
+import type { ButtonHTMLAttributes } from 'react'
 import { iconButton } from '../../styles/uiClasses'
 
-interface ToolbarButtonProps extends HTMLAttributes<HTMLButtonElement> { }
+interface ToolbarButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> { }
 
 export function ToolbarButton(props: ToolbarButtonProps) {
   const { children, className, ...restProps } = props;
