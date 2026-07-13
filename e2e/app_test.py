@@ -71,8 +71,17 @@ def assert_scroll_regions(page: Page) -> None:
         "element => ({ scrollHeight: element.scrollHeight, clientHeight: element.clientHeight })"
     )
     assert timeline_metrics["scrollHeight"] > timeline_metrics["clientHeight"], timeline_metrics
-    timeline.evaluate("element => { element.scrollTop = element.scrollHeight; return element.scrollTop }")
-    assert timeline.evaluate("element => element.scrollTop") > 0
+    timeline_box = timeline.bounding_box()
+    assert timeline_box is not None
+    page.mouse.move(
+        timeline_box["x"] + timeline_box["width"] / 2,
+        timeline_box["y"] + timeline_box["height"] / 2,
+    )
+    before_timeline_scroll = timeline.evaluate("element => element.scrollTop")
+    page.mouse.wheel(0, 600)
+    page.wait_for_timeout(50)
+    after_timeline_scroll = timeline.evaluate("element => element.scrollTop")
+    assert after_timeline_scroll > before_timeline_scroll
 
     filter_scroll = page.get_by_test_id("xiaoba-filter-scroll")
     filter_metrics = filter_scroll.evaluate(
@@ -116,6 +125,7 @@ def run_e2e(page: Page, url: str) -> None:
     page.get_by_role("button", name="Execution", exact=True).click()
     page.get_by_text("Tool activity", exact=True).wait_for(state="visible")
     page.get_by_text("read_file", exact=True).first.wait_for(state="visible")
+    assert_scroll_regions(page)
 
     page.get_by_test_id("open-folder-input").set_input_files(str(FIXTURE_DIR))
     page.get_by_role("button", name="Browse workspace logs").wait_for(state="visible")
@@ -123,9 +133,6 @@ def run_e2e(page: Page, url: str) -> None:
     tree = page.get_by_test_id("workspace-browser-tree")
     tree.wait_for(state="visible")
     assert tree.locator("button").count() >= 3
-
-    assert_scroll_regions(page)
-
 
 def run_suite(suite: str) -> None:
     server, url = start_preview()
