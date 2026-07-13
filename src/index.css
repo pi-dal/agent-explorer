@@ -109,6 +109,28 @@ body {
 
 * {
   box-sizing: border-box;
+  scrollbar-color: var(--color-separator-strong) transparent;
+  scrollbar-width: thin;
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background-clip: padding-box;
+  background-color: color-mix(in oklab, var(--color-separator-strong) 82%, transparent);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-secondary);
 }
 
 .split-view {
