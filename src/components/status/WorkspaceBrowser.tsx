@@ -10,6 +10,7 @@ import {
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ExplorerSession } from '../../core/types'
 import { dropdownPanel } from '../../styles/uiClasses'
+import { PathActions } from '../shared/CopyablePath'
 
 interface DirectoryNode {
   name: string
@@ -155,6 +156,8 @@ export function WorkspaceBrowser({
   const rootRef = useRef<HTMLDivElement>(null)
   const tree = useMemo(() => buildTree(sessions, workspaceName), [sessions, workspaceName])
   const selectedIndex = Math.max(0, sessions.indexOf(session))
+  const copyPath = session.sourceFilePath ?? session.sourcePath ?? session.fileName
+  const hasAbsolutePath = Boolean(session.sourceFilePath)
 
   useEffect(() => {
     const initial = new Set<string>()
@@ -181,11 +184,11 @@ export function WorkspaceBrowser({
   }
 
   return (
-    <div ref={rootRef} className="relative min-w-0">
+    <div ref={rootRef} className="relative flex min-w-0 items-center gap-1">
       <button
         type="button"
         onClick={() => setOpen(value => !value)}
-        className="flex h-7 max-w-96 items-center gap-1.5 rounded border border-separator bg-background px-2 text-xs text-primary outline-none hover:bg-overlay focus:border-accent/80 focus:ring-2 focus:ring-accent/30"
+        className="flex h-7 min-w-0 max-w-96 items-center gap-1.5 rounded border border-separator bg-background px-2 text-xs text-primary outline-none hover:bg-overlay focus:border-accent/80 focus:ring-2 focus:ring-accent/30"
         aria-expanded={open}
         aria-label="Browse workspace logs"
       >
@@ -193,6 +196,10 @@ export function WorkspaceBrowser({
         <span className="truncate">{session.sourcePath ?? session.fileName}</span>
         <ChevronDown size={12} strokeWidth={1.75} className="shrink-0 text-tertiary" aria-hidden />
       </button>
+      <PathActions
+        value={copyPath}
+        label={hasAbsolutePath ? 'absolute log path' : 'log path (relative in browser mode)'}
+      />
       {open && (
         <div className={`absolute left-0 top-full z-30 mt-1 w-[min(42rem,calc(100vw-2rem))] overflow-hidden ${dropdownPanel}`}>
           <div className="flex h-8 items-center border-b border-separator px-3 text-[10px] font-semibold uppercase text-tertiary">
