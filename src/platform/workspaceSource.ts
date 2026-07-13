@@ -31,7 +31,7 @@ export function browserWorkspaceFiles(files: File[]): WorkspaceFile[] {
 }
 
 export async function openDesktopFile(): Promise<WorkspaceFile | null> {
-  const [{ open }, { readTextFile, stat }] = await Promise.all([
+  const [{ open }, { readTextFile }] = await Promise.all([
     import('@tauri-apps/plugin-dialog'),
     import('@tauri-apps/plugin-fs'),
   ])
@@ -43,8 +43,10 @@ export async function openDesktopFile(): Promise<WorkspaceFile | null> {
   })
   if (!path) return null
 
-  const info = await stat(path)
-  return desktopWorkspaceFile(path, fileName(path), info.mtime?.getTime() ?? 0, readTextFile)
+  // Reading the selected file is the critical operation. Metadata can be
+  // unavailable for network volumes and should not make Open File appear to
+  // do nothing after the picker closes.
+  return desktopWorkspaceFile(path, fileName(path), Date.now(), readTextFile)
 }
 
 export async function openDesktopDirectory(): Promise<DesktopWorkspace | null> {

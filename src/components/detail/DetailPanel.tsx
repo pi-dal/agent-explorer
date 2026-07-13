@@ -59,7 +59,7 @@ export function DetailPanel() {
   }
 
   return (
-    <div className="flex h-full flex-col bg-background">
+    <div className="flex h-full min-h-0 flex-col bg-background">
       <div className={`flex items-center gap-1 px-1 ${sectionDivider}`}>
         <TabButton active={tab === 'session'} onClick={() => setTab('session')}>
           Session
@@ -95,7 +95,7 @@ export function DetailPanel() {
           Raw JSON
         </TabButton>
       </div>
-      <div className="flex-1 overflow-auto p-3">
+      <div className="min-h-0 flex-1 overflow-auto overscroll-contain p-3">
         {tab === 'session' && <SessionMetaPanel session={session} />}
         {tab === 'execution' && hasExecution && selection?.event && (
           <XiaoBaExecutionPanel event={selection.event} />

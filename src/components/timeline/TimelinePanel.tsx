@@ -125,7 +125,7 @@ export function TimelinePanel() {
   }
 
   return (
-    <div className="flex h-full flex-col bg-background">
+    <div className="flex h-full min-h-0 flex-col bg-background">
       <div className={panelHeader}>
         Timeline · {events.length}
         {events.length !== allEvents.length ? ` / ${allEvents.length}` : ''} events
@@ -148,7 +148,7 @@ export function TimelinePanel() {
           selectedId ? `timeline-event-${selectedId}` : undefined
         }
         onKeyDown={handleTimelineKeyDown}
-        className="flex-1 overflow-auto outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent/30"
+        className="min-h-0 flex-1 overflow-auto overscroll-contain outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent/30"
       >
         {events.length === 0 ? (
           <div className={`flex h-full items-center justify-center p-4 ${emptyStateXs}`}>

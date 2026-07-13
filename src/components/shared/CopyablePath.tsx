@@ -1,4 +1,4 @@
-import { Check, Copy, ExternalLink } from 'lucide-react'
+import { Check, Copy, ExternalLink, FolderSearch } from 'lucide-react'
 import { useState } from 'react'
 import { isDesktopApp } from '../../platform/workspaceSource'
 
@@ -50,15 +50,22 @@ export function OpenPathButton({
   value: string
   label?: string
 }) {
-  const [state, setState] = useState<'idle' | 'opened' | 'failed'>('idle')
+  const [state, setState] = useState<'idle' | 'opened' | 'revealed' | 'failed'>('idle')
 
   async function openPath() {
     if (!isDesktopApp()) return
     try {
       const { openPath: openDesktopPath } = await import('@tauri-apps/plugin-opener')
-      await openDesktopPath(value)
-      setState('opened')
-      window.setTimeout(() => setState('idle'), 1500)
+      try {
+        await openDesktopPath(value)
+        setState('opened')
+        window.setTimeout(() => setState('idle'), 1500)
+      } catch {
+        const { revealItemInDir } = await import('@tauri-apps/plugin-opener')
+        await revealItemInDir(value)
+        setState('revealed')
+        window.setTimeout(() => setState('idle'), 1800)
+      }
     } catch {
       setState('failed')
       window.setTimeout(() => setState('idle'), 2000)
@@ -73,10 +80,10 @@ export function OpenPathButton({
         void openPath()
       }}
       className={`inline-flex h-5 w-5 shrink-0 items-center justify-center rounded text-tertiary opacity-60 transition hover:bg-overlay hover:text-primary focus-visible:opacity-100 ${state === 'failed' ? 'text-danger opacity-100' : ''}`}
-      aria-label={state === 'opened' ? `${label} opened` : state === 'failed' ? `Failed to open ${label}` : `Open ${label}`}
-      title={state === 'opened' ? 'Opened' : state === 'failed' ? 'Failed to open' : `Open ${label}`}
+      aria-label={state === 'opened' ? `${label} opened` : state === 'revealed' ? `${label} revealed in folder` : state === 'failed' ? `Failed to open ${label}` : `Open ${label}`}
+      title={state === 'opened' ? 'Opened' : state === 'revealed' ? 'Shown in folder' : state === 'failed' ? 'Failed to open' : `Open ${label}`}
     >
-      {state === 'opened' ? <Check size={12} strokeWidth={1.75} aria-hidden /> : <ExternalLink size={12} strokeWidth={1.75} aria-hidden />}
+      {state === 'opened' ? <Check size={12} strokeWidth={1.75} aria-hidden /> : state === 'revealed' ? <FolderSearch size={12} strokeWidth={1.75} aria-hidden /> : <ExternalLink size={12} strokeWidth={1.75} aria-hidden />}
     </button>
   )
 }

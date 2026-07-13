@@ -11,7 +11,7 @@
   },
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --strictPort",
     "desktop:dev": "tauri dev",
     "desktop:build": "tauri build",
     "version:check": "node scripts/check-version.mjs",

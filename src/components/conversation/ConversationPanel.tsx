@@ -168,13 +168,13 @@ export function ConversationPanel() {
   }
 
   return (
-    <div className="flex h-full flex-col bg-under-page-background">
+    <div className="flex h-full min-h-0 flex-col bg-under-page-background">
       <div className={panelHeader}>
         {session.fileType.startsWith('XiaoBa') ? 'Execution flow' : 'Conversation'} · {items.length}
         {items.length !== allItems.length ? ` / ${allItems.length}` : ''} items ·{' '}
         {session.meta.turnCount} turns
       </div>
-      <div ref={parentRef} className="flex-1 overflow-auto py-3">
+      <div ref={parentRef} className="min-h-0 flex-1 overflow-auto overscroll-contain py-3">
         <div
           style={{ height: virtualizer.getTotalSize(), position: 'relative', width: '100%' }}
         >
