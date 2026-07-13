@@ -1,7 +1,7 @@
 {
   "name": "agent-explorer",
   "private": true,
-  "version": "0.2.0",
+  "version": "0.2.1",
   "author": "pi-dal",
   "license": "MIT",
   "homepage": "https://github.com/pi-dal/agent-explorer",
