@@ -1,6 +1,7 @@
 import ReactMarkdown, { type Components } from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import type { MarkdownProps } from './Markdown'
+import { normalizeMarkdown } from './markdownUtils'
 
 const components: Components = {
   p: ({ children }) => <p className="my-2 first:mt-0 last:mb-0">{children}</p>,
@@ -58,7 +59,7 @@ export default function MarkdownRenderer({ source, className }: MarkdownProps) {
   return (
     <div className={`md text-sm leading-relaxed wrap-break-word ${className ?? ''}`}>
       <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
-        {source}
+        {normalizeMarkdown(source)}
       </ReactMarkdown>
     </div>
   )
