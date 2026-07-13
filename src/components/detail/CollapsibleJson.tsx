@@ -5,6 +5,7 @@ import {
   textExpandButton,
 } from '../../styles/uiClasses'
 import { ChevronToggle } from '../shared/ChevronToggle'
+import { ExpandablePre } from '../shared/ExpandablePre'
 import { ToolbarButton } from '../shared/ToolbarButton'
 
 const STRING_LIMIT = 200
@@ -53,8 +54,20 @@ function JsonNode({
   }
 
   if (typeof value === 'string') {
-    const showFull = stringExpanded || value.length <= STRING_LIMIT
-    const display = showFull ? value : `${value.slice(0, STRING_LIMIT)}…`
+    const displayValue = value.includes('\n') ? value : value.replace(/\\n/g, '\n')
+    if (displayValue.includes('\n')) {
+      return (
+        <div style={depth > 1 ? { paddingLeft: LEVEL_INDENT } : undefined} className="font-mono text-xs leading-5">
+          {prefix}
+          <ExpandablePre
+            text={displayValue}
+            className="mt-1 rounded border border-separator bg-under-page-background px-2.5 py-2"
+          />
+        </div>
+      )
+    }
+    const showFull = stringExpanded || displayValue.length <= STRING_LIMIT
+    const display = showFull ? displayValue : `${displayValue.slice(0, STRING_LIMIT)}…`
     return (
       <div style={depth > 1 ? { paddingLeft: LEVEL_INDENT } : undefined} className="font-mono text-xs leading-5">
         {prefix}

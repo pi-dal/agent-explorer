@@ -5,6 +5,7 @@ import type { ConversationListItem } from '../../core/types'
 import { ChevronToggle } from '../shared/ChevronToggle'
 import { ExpandablePre } from '../shared/ExpandablePre'
 import { AnimatedExpander } from '../shared/AnimatedExpander'
+import { CollapsibleJson } from '../detail/CollapsibleJson'
 
 interface ToolCallCardProps {
   item: ConversationListItem
@@ -17,6 +18,16 @@ function shortToolId(id?: string): string | null {
   if (!id) return null
   if (id.length <= 64) return id
   return `${id.slice(0, 64)}…`
+}
+
+function parseJson(text: string): unknown | undefined {
+  const trimmed = text.trim()
+  if (!trimmed) return undefined
+  try {
+    return JSON.parse(trimmed) as unknown
+  } catch {
+    return undefined
+  }
 }
 
 export function ToolCallCard({
@@ -32,6 +43,9 @@ export function ToolCallCard({
   const status = block?.status
   const isResult = item.role === 'tool_result'
   const shortId = shortToolId(block?.toolCallId)
+  const structuredValue = isResult
+    ? parseJson(text)
+    : block?.toolInput ?? parseJson(text)
 
   function toggle() {
     setExpanded((value) => !value)
@@ -80,13 +94,22 @@ export function ToolCallCard({
               pairHighlighted ? 'text-primary' : 'text-tertiary'
             }`}
           >
-            {isResult ? 'Result' : toolName}
+            {isResult ? `Result · ${toolName}` : `Call · ${toolName}`}
           </span>
           {shortId && <span className="text-xs font-mono text-tertiary">({shortId})</span>}
           <ChevronToggle expanded={expanded} className="text-tertiary" />
         </button>
         <AnimatedExpander expanded={expanded}>
-          <ExpandablePre text={text} className="rounded bg-background mx-1 my-1 px-3 py-2 border border-separator" />
+          <div className="mx-1 my-1 rounded border border-separator bg-background px-3 py-2">
+            <div className="mb-1 text-[10px] font-medium uppercase tracking-wide text-tertiary">
+              {isResult ? 'Result' : 'Input'}
+            </div>
+            {structuredValue !== undefined ? (
+              <CollapsibleJson value={structuredValue} defaultExpanded />
+            ) : (
+              <ExpandablePre text={text} className="text-primary" />
+            )}
+          </div>
         </AnimatedExpander>
       </div>
     </div>

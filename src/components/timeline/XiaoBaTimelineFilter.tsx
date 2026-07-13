@@ -1,4 +1,4 @@
-import { Bot, Braces, ListTree, MessageSquareText, TerminalSquare } from 'lucide-react'
+import { Bot, Braces, GitBranch, ListTree, MessageSquareText, TerminalSquare, Wrench } from 'lucide-react'
 import type { TimelineEvent } from '../../core/types'
 import {
   countXiaoBaTimelineScopes,
@@ -13,6 +13,8 @@ const OPTIONS: Array<{
 }> = [
   { value: 'all', label: 'All', icon: ListTree },
   { value: 'workflow', label: 'Workflow', icon: MessageSquareText },
+  { value: 'tool', label: 'Tools', icon: Wrench },
+  { value: 'branch', label: 'Branches', icon: GitBranch },
   { value: 'runtime', label: 'Runtime', icon: TerminalSquare },
   { value: 'prompt', label: 'Prompts', icon: Braces },
   { value: 'subagent', label: 'Subagents', icon: Bot },

@@ -30,6 +30,12 @@ function estimateRowSize(
       return Math.min(320, 72 + Math.ceil(item.event.preview.length / 48) * 20)
     case 'thinking':
       return 26
+    case 'branch_activity':
+      return 30
+    case 'branch_event':
+      return 42
+    case 'runtime_activity':
+      return 30
     case 'tool_call':
       return 30
     case 'system':
@@ -103,7 +109,7 @@ export function ConversationPanel() {
     items.forEach((item, itemIndex) => {
       const turnIndex = item.event?.turnIndex ?? 0
       if (turnIndex !== lastTurn) {
-        result.push({ kind: 'turn', turnIndex, key: `${sessionKey}:turn-${turnIndex}` })
+        result.push({ kind: 'turn', turnIndex, key: `${sessionKey}:turn-${turnIndex}-${itemIndex}` })
         lastTurn = turnIndex
       }
       result.push({ kind: 'item', key: `${sessionKey}:${item.id}`, itemIndex })

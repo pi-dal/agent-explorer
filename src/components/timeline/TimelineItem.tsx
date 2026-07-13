@@ -1,7 +1,7 @@
 import type { KeyboardEvent } from 'react'
 import type { TimelineEvent } from '../../core/types'
 import { categoryDotClass } from './categoryStyle'
-import { Bot, Braces, Circle, TerminalSquare } from 'lucide-react'
+import { Activity, Bot, Braces, Circle, GitBranch, TerminalSquare, Wrench } from 'lucide-react'
 
 export const TIMELINE_ITEM_HEIGHT = 44
 
@@ -23,14 +23,26 @@ export function TimelineItem({
   const isBranch = event.raw
     && typeof event.raw === 'object'
     && !Array.isArray(event.raw)
-    && (event.raw as Record<string, unknown>).entry_type === 'branch'
+    && ((event.raw as Record<string, unknown>).entry_type === 'branch'
+      || (event.raw as Record<string, unknown>).entry_type === 'embedded_trace')
+    || event.kind === 'branch_anchor'
+    || event.kind === 'branch_lifecycle'
+    || event.branchActivity
+    || event.traceRefs?.some(ref => ref.kind === 'branch')
+  const isToolEvent = event.kind === 'tool_call' || event.kind === 'tool_result'
   const KindIcon = event.kind === 'runtime'
     ? TerminalSquare
+    : event.kind === 'runtime_activity'
+      ? Activity
     : event.kind === 'prompt_trace'
       ? Braces
-      : event.kind === 'subagent_event' || isBranch
-        ? Bot
-        : Circle
+      : isToolEvent
+        ? Wrench
+        : event.branchActivity
+          ? GitBranch
+          : event.kind === 'subagent_event' || isBranch
+            ? Bot
+            : Circle
 
   return (
     <button
@@ -51,12 +63,12 @@ export function TimelineItem({
       >
         #{event.lineIndex}
       </span>
-      {event.kind === 'runtime' || event.kind === 'prompt_trace' || event.kind === 'subagent_event' || isBranch ? (
+      {event.kind === 'runtime' || event.kind === 'runtime_activity' || event.kind === 'prompt_trace' || event.kind === 'subagent_event' || isBranch || isToolEvent ? (
         <KindIcon
           size={13}
           strokeWidth={1.75}
           className={`shrink-0 ${
-            event.kind === 'runtime'
+            event.kind === 'runtime' || event.kind === 'runtime_activity'
               ? 'text-role-system'
               : event.kind === 'prompt_trace'
                 ? 'text-role-thinking'

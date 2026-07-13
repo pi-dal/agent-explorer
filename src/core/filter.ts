@@ -58,10 +58,18 @@ function isSystemTimelineEvent(event: TimelineEvent): boolean {
 }
 
 function isSystemConversationItem(item: ConversationListItem): boolean {
-  return item.role === 'system'
+  return item.role === 'system' || item.role === 'runtime_activity'
 }
 
 function isToolTimelineEvent(event: TimelineEvent): boolean {
+  const raw = event.raw
+  const isBranch = typeof raw === 'object'
+    && raw !== null
+    && !Array.isArray(raw)
+    && ((raw as Record<string, unknown>).entry_type === 'branch'
+      || (raw as Record<string, unknown>).entry_type === 'embedded_trace')
+  if (isBranch || event.kind === 'branch_anchor') return false
+  if (event.branchActivity) return false
   return event.category === 'tool' || event.label.startsWith('tool_use')
 }
 

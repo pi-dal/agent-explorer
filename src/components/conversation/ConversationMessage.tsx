@@ -1,6 +1,9 @@
 import type { ConversationListItem } from '../../core/types'
 import { AssistantBubble, SystemMessage, UserBubble } from './MessageBubble'
 import { ThinkingBlock } from './ThinkingBlock'
+import { BranchActivityCard } from './BranchActivityCard'
+import { BranchEventCard } from './BranchEventCard'
+import { RuntimeActivityCard } from './RuntimeActivityCard'
 import { ToolCallCard } from './ToolCallCard'
 
 interface ConversationMessageProps {
@@ -29,6 +32,12 @@ export function ConversationMessage({
           onSelect={onSelect}
         />
       )
+    case 'branch_activity':
+      return <BranchActivityCard item={item} selected={selected} onSelect={onSelect} />
+    case 'branch_event':
+      return <BranchEventCard item={item} selected={selected} onSelect={onSelect} />
+    case 'runtime_activity':
+      return <RuntimeActivityCard item={item} selected={selected} onSelect={onSelect} />
     case 'tool_call':
     case 'tool_result':
       return (

@@ -6,7 +6,7 @@ export function SessionMetaPanel({ session }: { session: ExplorerSession }) {
   const stats = computeSessionStats(session)
   const { meta } = session
 
-  const rows: Array<{ label: string; value: string }> = [
+  const rows: Array<{ label: string; value: string; copyable?: boolean }> = [
     { label: 'File', value: session.fileName },
     { label: 'File type', value: session.fileType },
     { label: 'Events', value: String(meta.eventCount) },
@@ -17,7 +17,10 @@ export function SessionMetaPanel({ session }: { session: ExplorerSession }) {
   ]
 
   if (session.sourcePath && session.sourcePath !== session.fileName) {
-    rows.splice(1, 0, { label: 'Source path', value: session.sourcePath })
+    rows.splice(1, 0, { label: 'Source path', value: session.sourcePath, copyable: true })
+  }
+  if (session.sourceFilePath && session.sourceFilePath !== session.sourcePath) {
+    rows.splice(2, 0, { label: 'File path', value: session.sourceFilePath, copyable: true })
   }
 
   if (meta.sessionId) rows.push({ label: 'Session ID', value: meta.sessionId })
@@ -56,7 +59,7 @@ export function SessionMetaPanel({ session }: { session: ExplorerSession }) {
   return (
     <div className="flex flex-col gap-2">
       {rows.map((row) => (
-        <SummaryRow key={row.label} label={row.label} value={row.value} />
+        <SummaryRow key={row.label} label={row.label} value={row.value} copyable={row.copyable} />
       ))}
     </div>
   )
