@@ -61,6 +61,14 @@ fn is_supported_log(path: &Path) -> bool {
             })
 }
 
+fn event_touches_watched_parent(changed: &Path, target: &Path, parent: &Path) -> bool {
+    changed == target
+        || changed == parent
+        || changed
+            .parent()
+            .is_some_and(|changed_parent| changed_parent == parent)
+}
+
 fn system_open_paths(arguments: impl IntoIterator<Item = String>) -> Vec<PathBuf> {
     arguments
         .into_iter()
@@ -121,12 +129,15 @@ fn watch_log_file(
         .ok_or_else(|| "The selected log file has no parent directory".to_string())?
         .to_path_buf();
     let target = path.clone();
+    let parent_for_event = parent.clone();
     let event_app = app.clone();
     let mut watcher = notify::recommended_watcher(move |result: notify::Result<notify::Event>| {
-        if result
-            .as_ref()
-            .is_ok_and(|event| event.paths.iter().any(|changed| changed == &target))
-        {
+        if result.as_ref().is_ok_and(|event| {
+            event
+                .paths
+                .iter()
+                .any(|changed| event_touches_watched_parent(changed, &target, &parent_for_event))
+        }) {
             let _ = event_app.emit("watched-log-changed", ());
         }
     })
@@ -365,10 +376,33 @@ pub fn run() {
 #[cfg(test)]
 mod tests {
     use super::{
-        is_desktop_action, is_main_window, is_supported_log, parse_recent_source,
-        system_open_paths, window_state_flags, RecentSourceKind,
+        event_touches_watched_parent, is_desktop_action, is_main_window, is_supported_log,
+        parse_recent_source, system_open_paths, window_state_flags, RecentSourceKind,
     };
-    use std::fs;
+    use std::{fs, path::Path};
+
+    #[test]
+    fn watched_file_events_include_atomic_replacements_in_the_same_directory() {
+        let target = Path::new("/tmp/session.jsonl");
+        let parent = Path::new("/tmp");
+
+        assert!(event_touches_watched_parent(target, target, parent));
+        assert!(event_touches_watched_parent(
+            Path::new("/tmp/.session.jsonl.tmp"),
+            target,
+            parent,
+        ));
+        assert!(event_touches_watched_parent(parent, target, parent));
+    }
+
+    #[test]
+    fn watched_file_events_ignore_other_directories() {
+        assert!(!event_touches_watched_parent(
+            Path::new("/other/session.jsonl"),
+            Path::new("/tmp/session.jsonl"),
+            Path::new("/tmp"),
+        ));
+    }
 
     #[test]
     fn recognizes_only_application_menu_actions() {
