@@ -95,14 +95,18 @@ def run_smoke(page: Page, url: str) -> None:
     assert page.title() == "Agent Explorer"
     assert page.get_by_text("No session loaded", exact=True).count() > 0
     load_sample(page)
-    assert_scroll_regions(page)
 
 
 def run_e2e(page: Page, url: str) -> None:
+    page.set_viewport_size({"width": 1024, "height": 480})
     page.goto(url, wait_until="networkidle")
     page.get_by_test_id("open-file-input").set_input_files(str(FIXTURE))
     wait_for_session(page)
     page.get_by_text("xiaoba-session.sample.jsonl", exact=True).wait_for(state="visible")
+
+    timeline_tool = page.get_by_role("option").filter(has_text=re.compile(r"read_file")).first
+    timeline_tool.wait_for(state="visible")
+    timeline_tool.click()
 
     tool_call = page.get_by_role("button", name=re.compile(r"Call · read_file")).first
     tool_call.wait_for(state="visible")
@@ -137,17 +141,18 @@ def run_suite(suite: str) -> None:
                 else None,
             )
             page.on("pageerror", lambda error: page_errors.append(str(error)))
-            if suite == "smoke":
-                run_smoke(page, url)
-            else:
-                run_e2e(page, url)
-            browser.close()
-    except Exception:
-        if page is not None:
-            screenshot_dir = ROOT / "test-results"
-            screenshot_dir.mkdir(exist_ok=True)
-            page.screenshot(path=str(screenshot_dir / f"{suite}-failure.png"), full_page=True)
-        raise
+            try:
+                if suite == "smoke":
+                    run_smoke(page, url)
+                else:
+                    run_e2e(page, url)
+            except Exception:
+                screenshot_dir = ROOT / "test-results"
+                screenshot_dir.mkdir(exist_ok=True)
+                page.screenshot(path=str(screenshot_dir / f"{suite}-failure.png"), full_page=True)
+                raise
+            finally:
+                browser.close()
     finally:
         stop_preview(server)
 

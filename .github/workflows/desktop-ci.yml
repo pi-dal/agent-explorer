@@ -27,10 +27,39 @@ jobs:
       - run: pnpm lint
       - run: pnpm test
       - run: pnpm build
+
+      - name: Upload web build
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-explorer-web-dist-${{ github.sha }}
+          path: dist
+          if-no-files-found: error
+
+  web-e2e:
+    name: Web smoke and E2E
+    needs: quality
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: jdx/mise-action@v4
+        with:
+          cache: true
+      - run: pnpm install --frozen-lockfile
+      - uses: actions/download-artifact@v4
+        with:
+          name: agent-explorer-web-dist-${{ github.sha }}
+          path: dist
       - name: Install Playwright Chromium
         run: uv run --with playwright --no-project python -m playwright install --with-deps chromium
       - run: pnpm test:smoke
       - run: pnpm test:e2e
+      - name: Upload browser failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-explorer-web-e2e-failures-${{ github.sha }}
+          path: test-results
+          if-no-files-found: ignore
 
   desktop:
     name: ${{ matrix.name }}
