@@ -12,6 +12,9 @@ export type ConversationRole =
   | 'assistant'
   | 'system'
   | 'thinking'
+  | 'branch_activity'
+  | 'branch_event'
+  | 'runtime_activity'
   | 'tool_call'
   | 'tool_result'
 
@@ -45,6 +48,39 @@ export interface ContentBlock {
   status?: 'pending' | 'completed' | 'failed'
 }
 
+export type TraceRelationKind = 'branch' | 'distillation'
+export type TraceRelationConfidence = 'exact' | 'inferred'
+
+export interface TraceLifecycle {
+  outcome?: string
+  observationId?: string
+  originTurn?: number
+  timing?: string
+  refs?: string[]
+}
+
+export interface TraceRelationRef {
+  relationId: string
+  kind: TraceRelationKind
+  branchType: string
+  branchId: string
+  childSessionKey: string
+  confidence: TraceRelationConfidence
+  sourceFilePath?: string
+  sourceByteRange?: { start: number; end: number }
+  anchorTurn?: number
+  lifecycle?: TraceLifecycle
+}
+
+export interface TraceRelation extends TraceRelationRef {
+  parentSessionKey: string
+  anchorEventId?: string
+}
+
+export interface TraceGraph {
+  relations: TraceRelation[]
+}
+
 export interface TimelineEvent {
   id: string
   lineIndex: number
@@ -63,6 +99,34 @@ export interface TimelineEvent {
   timestampLabel?: string
   role?: string
   stopReason?: string
+  branchActivity?: {
+    branchType: string
+    branchId: string
+    turn: number
+    phase: string
+    text: string
+    toolNames?: string[]
+  }
+  branchEvent?: {
+    branchType: string
+    branchId: string
+    eventType: string
+    text: string
+  }
+  runtimeActivity?: {
+    phase: string
+    scope?: string
+    turn?: number
+    text: string
+    toolNames?: string[]
+    durationMs?: number
+    tokenUsage?: {
+      inputTokens: number
+      outputTokens: number
+      totalTokens: number
+    }
+  }
+  traceRefs?: TraceRelationRef[]
   conversationItem?: ConversationListItem
   raw: unknown
 }

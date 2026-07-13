@@ -1,6 +1,12 @@
 import type { SessionAdapter } from './types'
 import { truncateBlockText, truncatePreview } from '../core/text'
-import { parseXiaoBaRuntimeToolMessage } from '../core/xiaoba'
+import {
+  parseXiaoBaBranchActivity,
+  parseXiaoBaRuntimeToolMessage,
+  parseXiaoBaRuntimeActivity,
+  xiaobaRuntimeActivityLabel,
+  xiaobaBranchActivityLabel,
+} from '../core/xiaoba'
 import type {
   ContentBlock,
   ConversationListItem,
@@ -15,13 +21,13 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
-function getString(record: Record<string, unknown>, key: string): string | undefined {
-  const value = record[key]
+function getString(record: Record<string, unknown> | undefined, key: string): string | undefined {
+  const value = record?.[key]
   return typeof value === 'string' ? value : undefined
 }
 
-function getNumber(record: Record<string, unknown>, key: string): number | undefined {
-  const value = record[key]
+function getNumber(record: Record<string, unknown> | undefined, key: string): number | undefined {
+  const value = record?.[key]
   return typeof value === 'number' && Number.isFinite(value) ? value : undefined
 }
 
@@ -107,7 +113,26 @@ function eventCategory(record: Record<string, unknown>): EventCategory {
   return 'unknown'
 }
 
+function syntheticLifecyclePayload(record: Record<string, unknown>): Record<string, unknown> | undefined {
+  if (getString(record, 'entry_type') !== 'runtime') return undefined
+  const event = isRecord(record.event) ? record.event : undefined
+  if (getString(event, 'type') !== 'synthetic_observation_lifecycle') return undefined
+  return isRecord(event?.payload) ? event.payload : undefined
+}
+
+function isSyntheticLifecycle(record: Record<string, unknown>): boolean {
+  return syntheticLifecyclePayload(record) !== undefined
+}
+
+function syntheticLifecycleLabel(record: Record<string, unknown>): string {
+  const payload = syntheticLifecyclePayload(record)
+  const outcome = getString(payload, 'outcome') ?? 'updated'
+  const branchType = getString(payload, 'branch_type') ?? 'branch'
+  return `Branch ${outcome} · ${branchType}`
+}
+
 function eventLabel(record: Record<string, unknown>): string {
+  if (isSyntheticLifecycle(record)) return syntheticLifecycleLabel(record)
   if (getString(record, 'entry_type') === 'branch') {
     return [getString(record, 'branch_type'), getString(record, 'event_type')]
       .filter(Boolean)
@@ -351,6 +376,37 @@ function parseToolInput(value: unknown): Record<string, unknown> {
   }
 }
 
+interface ContextToolCall {
+  id?: string
+  name: string
+  arguments?: unknown
+}
+
+function contextToolCalls(record: Record<string, unknown>): ContextToolCall[] {
+  if (getString(record, 'role') !== 'assistant' || !Array.isArray(record.tool_calls)) {
+    return []
+  }
+
+  return record.tool_calls.flatMap((value): ContextToolCall[] => {
+    if (!isRecord(value)) return []
+    const functionValue = isRecord(value.function) ? value.function : undefined
+    const name = getString(value, 'name')
+      ?? (functionValue ? getString(functionValue, 'name') : undefined)
+    if (!name) return []
+    return [{
+      id: getString(value, 'id'),
+      name,
+      arguments: value.arguments ?? functionValue?.arguments,
+    }]
+  })
+}
+
+function contextToolLabel(calls: ContextToolCall[]): string {
+  const names = calls.slice(0, 3).map(call => call.name)
+  const suffix = calls.length > names.length ? ` +${calls.length - names.length}` : ''
+  return `tool_use ${names.join(', ')}${suffix}`
+}
+
 function messageText(content: unknown): string {
   if (typeof content === 'string') return content
   if (!Array.isArray(content)) return ''
@@ -397,6 +453,7 @@ function addTurnConversationItems(
     const callId = getString(value, 'id') ?? `line-${event.lineIndex}-tool-${index}`
     const name = getString(value, 'name') ?? 'tool'
     const args = value.arguments
+    const result = getString(value, 'result') ?? ''
     addConversationItem(
       conversationItems,
       event,
@@ -408,20 +465,20 @@ function addTurnConversationItems(
         toolName: name,
         toolInput: toolInput(args),
         toolCallId: callId,
-        status: 'pending',
+        status: result ? 'completed' : 'pending',
       },
     )
 
-    const result = getString(value, 'result') ?? ''
     addConversationItem(
       conversationItems,
       event,
       `conv-${event.lineIndex}-tool-result-${index}`,
       'tool_result',
-      result
+        result
         ? {
             type: 'text',
             text: truncateBlockText(result),
+            toolName: name,
             toolCallId: callId,
             status: 'completed',
           }
@@ -450,31 +507,30 @@ function addContextConversationItems(
   record: Record<string, unknown>,
   event: TimelineEvent,
   conversationItems: ConversationListItem[],
+  completedToolCallIds: Set<string>,
 ): void {
   const role = getString(record, 'role') ?? 'system'
   const text = messageText(record.content)
+  let primaryItem: ConversationListItem | undefined
 
   if (role === 'assistant') {
-    const calls = Array.isArray(record.tool_calls) ? record.tool_calls : []
-    calls.forEach((value, index) => {
-      if (!isRecord(value) || !isRecord(value.function)) return
-      const callId = getString(value, 'id') ?? `line-${event.lineIndex}-tool-${index}`
-      const name = getString(value.function, 'name') ?? 'tool'
-      const args = value.function.arguments
-      addConversationItem(
+    contextToolCalls(record).forEach((call, index) => {
+      const callId = call.id ?? `line-${event.lineIndex}-tool-${index}`
+      const item = addConversationItem(
         conversationItems,
         event,
         `conv-${event.lineIndex}-tool-call-${index}`,
         'tool_call',
         {
           type: 'tool_use',
-          text: truncateBlockText(toolInputText(args)),
-          toolName: name,
-          toolInput: parseToolInput(args),
+          text: truncateBlockText(toolInputText(call.arguments)),
+          toolName: call.name,
+          toolInput: parseToolInput(call.arguments),
           toolCallId: callId,
-          status: 'pending',
+          status: completedToolCallIds.has(callId) ? 'completed' : 'pending',
         },
       )
+      primaryItem ??= item
     })
   }
 
@@ -484,19 +540,25 @@ function addContextConversationItems(
       ? role
       : 'system'
   const callId = role === 'tool' ? getString(record, 'tool_call_id') : undefined
-  addConversationItem(
-    conversationItems,
-    event,
-    `conv-${event.lineIndex}-${conversationRole}`,
-    conversationRole,
-    text
-      ? {
-          type: 'text',
-          text: truncateBlockText(text),
-          ...(callId && { toolCallId: callId, status: 'completed' as const }),
-        }
-      : undefined,
-  )
+  const hasToolCalls = contextToolCalls(record).length > 0
+  if (text || role !== 'assistant' || !hasToolCalls) {
+    const messageItem = addConversationItem(
+      conversationItems,
+      event,
+      `conv-${event.lineIndex}-${conversationRole}`,
+      conversationRole,
+      text
+        ? {
+            type: 'text',
+            text: truncateBlockText(text),
+            ...(role === 'tool' && { toolName: getString(record, 'name') }),
+            ...(callId && { toolCallId: callId, status: 'completed' as const }),
+          }
+        : undefined,
+    )
+    primaryItem ??= messageItem
+  }
+  event.conversationItem = primaryItem
 }
 
 function addMemoryTranscriptItems(
@@ -628,6 +690,7 @@ export const xiaobaSessionAdapter: SessionAdapter = {
     const pendingRuntimeTools = new Map<string, string[]>()
     const pendingSubagentTools = new Map<string, string[]>()
     const recordedTurnTools = new Set<string>()
+    const completedContextTools = new Set<string>()
 
     for (const line of lines) {
       if (!isRecord(line.data) || !isTurnEntry(line.data)) continue
@@ -638,9 +701,16 @@ export const xiaobaSessionAdapter: SessionAdapter = {
       for (const call of assistant.tool_calls) {
         if (isRecord(call)) {
           const name = getString(call, 'name')
-          if (name) recordedTurnTools.add(`${turn}:${name}`)
+          if (name) recordedTurnTools.add(`main:main:${turn}:${name}`)
         }
       }
+    }
+
+    for (const line of lines) {
+      if (!isRecord(line.data) || !isContextMessage(line.data)) continue
+      if (getString(line.data, 'role') !== 'tool') continue
+      const callId = getString(line.data, 'tool_call_id')
+      if (callId) completedContextTools.add(callId)
     }
 
     for (const line of lines) {
@@ -648,6 +718,8 @@ export const xiaobaSessionAdapter: SessionAdapter = {
       const record = line.data
       if (isContextMessage(record)) {
         const role = getString(record, 'role') ?? 'system'
+        const calls = contextToolCalls(record)
+        const isToolCall = role === 'assistant' && calls.length > 0
         const episodeId = getString(record, '__episodeId')
         if (
           (episodeId && episodeId !== lastEpisodeId)
@@ -660,26 +732,53 @@ export const xiaobaSessionAdapter: SessionAdapter = {
         const event: TimelineEvent = {
           id: `line-${line.lineIndex}`,
           lineIndex: line.lineIndex,
-          category: contextCategory(role),
-          kind: role === 'tool' ? 'tool_result' : role,
-          label: role === 'tool'
-            ? `tool_result ${getString(record, 'name') ?? 'tool'}`
-            : role,
-          preview: truncatePreview(messageText(record.content)),
+          category: isToolCall ? 'tool' : contextCategory(role),
+          kind: isToolCall ? 'tool_call' : role === 'tool' ? 'tool_result' : role,
+          label: isToolCall
+            ? contextToolLabel(calls)
+            : role === 'tool'
+              ? `tool_result ${getString(record, 'name') ?? 'tool'}`
+              : role,
+          preview: isToolCall
+            ? calls.map(call => call.name).join(' · ')
+            : truncatePreview(messageText(record.content)),
           turnIndex: currentTurn || 1,
           requestId: episodeId,
           role,
           raw: record,
         }
-        addContextConversationItems(record, event, conversationItems)
+        addContextConversationItems(record, event, conversationItems, completedContextTools)
         events.push(event)
         continue
       }
 
       const kind = entryKind(record)
       const turn = isTurnEntry(record) ? getNumber(record, 'turn') : undefined
+      const message = getString(record, 'message') ?? ''
       const runtimeTool = kind === 'runtime'
-        ? parseXiaoBaRuntimeToolMessage(getString(record, 'message') ?? '')
+        ? parseXiaoBaRuntimeToolMessage(message)
+        : undefined
+      const branchActivity = kind === 'runtime'
+        ? parseXiaoBaBranchActivity(message)
+        : undefined
+      const isBranchActivity = branchActivity !== undefined && runtimeTool === undefined
+      const runtimeActivity = kind === 'runtime' && !runtimeTool && !branchActivity && !isSyntheticLifecycle(record)
+        ? parseXiaoBaRuntimeActivity(message, { defaultScope: getString(record, 'session_type') })
+        : kind === 'prompt_trace'
+          ? {
+              phase: 'prompt_trace' as const,
+              scope: 'prompt',
+              text: workflowText(record),
+            }
+          : undefined
+      const isPromptTraceActivity = runtimeActivity?.phase === 'prompt_trace'
+      const branchEvent = getString(record, 'entry_type') === 'branch'
+        ? {
+            branchType: getString(record, 'branch_type') ?? 'branch',
+            branchId: getString(record, 'branch_id') ?? 'unknown',
+            eventType: getString(record, 'event_type') ?? 'event',
+            text: workflowText(record),
+          }
         : undefined
       sessionId ??= getString(record, 'session_id') ?? getString(record, 'branch_id')
       if (kind === 'turn') turnCount++
@@ -688,17 +787,50 @@ export const xiaobaSessionAdapter: SessionAdapter = {
         id: `line-${line.lineIndex}`,
         lineIndex: line.lineIndex,
         timestamp: parseTimestamp(record.timestamp),
-        category: runtimeTool ? 'tool' : eventCategory(record),
-        kind: runtimeTool ? (runtimeTool.phase === 'call' ? 'tool_call' : 'tool_result') : kind,
+        category: runtimeTool
+          ? 'tool'
+          : isSyntheticLifecycle(record) || isBranchActivity
+            ? 'meta'
+            : branchEvent
+              ? 'meta'
+            : runtimeActivity
+              ? kind === 'prompt_trace' || isPromptTraceActivity ? 'meta' : 'system'
+            : eventCategory(record),
+        kind: runtimeTool
+          ? (runtimeTool.phase === 'call' ? 'tool_call' : 'tool_result')
+          : isSyntheticLifecycle(record)
+            ? 'branch_lifecycle'
+            : isBranchActivity
+              ? 'branch_activity'
+              : branchEvent
+                ? 'branch_event'
+              : runtimeActivity
+                ? kind === 'prompt_trace' || isPromptTraceActivity ? 'prompt_trace' : 'runtime_activity'
+              : kind,
         label: runtimeTool
           ? `${runtimeTool.phase === 'call' ? 'tool_use' : 'tool_result'} ${runtimeTool.name}`
-          : eventLabel(record),
-        preview: eventPreview(record),
-        turnIndex: runtimeTool?.turn ?? turn ?? getNumber(record, 'round'),
+          : branchActivity
+            ? xiaobaBranchActivityLabel(branchActivity)
+            : branchEvent
+              ? `${branchEvent.branchType} · ${branchEvent.eventType}`
+            : runtimeActivity
+              ? xiaobaRuntimeActivityLabel(runtimeActivity)
+            : eventLabel(record),
+        preview: branchActivity
+          ? truncatePreview(branchActivity.text)
+          : branchEvent
+            ? truncatePreview(branchEvent.text)
+          : runtimeActivity
+            ? truncatePreview(runtimeActivity.text)
+            : eventPreview(record),
+        turnIndex: runtimeTool?.turn ?? branchActivity?.turn ?? runtimeActivity?.turn ?? turn ?? getNumber(record, 'round'),
         requestId: getString(record, 'episode_id'),
         usage: kind === 'turn' ? parseUsage(record) : undefined,
         sessionId: getString(record, 'session_id') ?? getString(record, 'branch_id'),
         timestampLabel: getString(record, 'timestamp'),
+        branchActivity,
+        branchEvent,
+        runtimeActivity,
         raw: record,
       }
 
@@ -707,7 +839,7 @@ export const xiaobaSessionAdapter: SessionAdapter = {
       } else if (addMemoryTranscriptItems(record, event, conversationItems)) {
         // Memory transcripts expand into their underlying message and tool sequence.
       } else if (runtimeTool) {
-        const pendingKey = `${runtimeTool.turn}:${runtimeTool.name}`
+        const pendingKey = `${runtimeTool.branchType ?? 'main'}:${runtimeTool.branchId ?? 'main'}:${runtimeTool.turn}:${runtimeTool.name}`
         if (recordedTurnTools.has(pendingKey)) {
           events.push(event)
           continue
@@ -751,6 +883,39 @@ export const xiaobaSessionAdapter: SessionAdapter = {
             },
           )
         }
+      } else if (isBranchActivity) {
+        addConversationItem(
+          conversationItems,
+          event,
+          `conv-${line.lineIndex}-branch-activity`,
+          'branch_activity',
+          {
+            type: 'text',
+            text: truncateBlockText(branchActivity.text),
+          },
+        )
+      } else if (branchEvent) {
+        addConversationItem(
+          conversationItems,
+          event,
+          `conv-${line.lineIndex}-branch-event`,
+          'branch_event',
+          {
+            type: 'text',
+            text: truncateBlockText(branchEvent.text),
+          },
+        )
+      } else if (runtimeActivity) {
+        addConversationItem(
+          conversationItems,
+          event,
+          `conv-${line.lineIndex}-runtime-activity`,
+          'runtime_activity',
+          {
+            type: 'text',
+            text: truncateBlockText(runtimeActivity.text),
+          },
+        )
       } else if (getString(record, 'entry_type') === 'subagent_event') {
         const subagent = isRecord(record.subagent) ? record.subagent : {}
         const subagentEvent = isRecord(record.event) ? record.event : {}

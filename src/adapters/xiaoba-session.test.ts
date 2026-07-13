@@ -117,7 +117,7 @@ describe('xiaobaSessionAdapter.parse', () => {
       toolName: 'bash',
       toolCallId: 'tool-1',
       toolInput: { command: 'rg --files' },
-      status: 'pending',
+      status: 'completed',
     })
     expect(session.conversationItems[2]?.block).toMatchObject({
       toolCallId: 'tool-1',
@@ -161,11 +161,143 @@ describe('xiaobaSessionAdapter.parse', () => {
 
     expect(session.events.map(event => event.category)).toEqual(['system', 'meta', 'tool'])
     expect(session.events.map(event => event.kind)).toEqual([
-      'runtime',
+      'runtime_activity',
       'prompt_trace',
       'subagent_event',
     ])
-    expect(session.conversationItems.map(item => item.role)).toEqual(['system', 'system', 'system'])
+    expect(session.conversationItems.map(item => item.role)).toEqual(['runtime_activity', 'runtime_activity', 'system'])
+  })
+
+  it('renders structured prompt traces as compact activities while keeping prompt detail', () => {
+    const session = xiaobaSessionAdapter.parse([line({
+      entry_type: 'prompt_trace',
+      timestamp: '2026-07-13T07:00:00.000Z',
+      session_id: 'main',
+      session_type: 'chat',
+      prompt: {
+        source: 'prompt-manager',
+        prompt_version: 'local',
+        loaded_files: ['system.md', 'runtime.md'],
+      },
+    })], 'main.jsonl')
+
+    expect(session.events[0]).toMatchObject({
+      kind: 'prompt_trace',
+      label: 'Prompt trace',
+      runtimeActivity: {
+        phase: 'prompt_trace',
+        text: expect.stringContaining('Prompt snapshot loaded'),
+      },
+    })
+    expect(session.conversationItems[0]?.role).toBe('runtime_activity')
+  })
+
+  it('renders known runtime messages as compact runtime activities', () => {
+    const session = xiaobaSessionAdapter.parse([line({
+      entry_type: 'runtime',
+      timestamp: '2026-07-13T07:00:00.000Z',
+      session_id: 'main',
+      session_type: 'chat',
+      level: 'INFO',
+      message: '[main Turn 1] AI返回 tokens: 100+20=120',
+    })], 'main.jsonl')
+
+    expect(session.events[0]).toMatchObject({
+      category: 'system',
+      kind: 'runtime_activity',
+      label: 'Token usage · Turn 1',
+      preview: 'input 100 · output 20 · total 120 tokens',
+      runtimeActivity: {
+        phase: 'token_usage',
+        tokenUsage: { inputTokens: 100, outputTokens: 20, totalTokens: 120 },
+      },
+    })
+    expect(session.conversationItems[0]?.role).toBe('runtime_activity')
+  })
+
+  it('normalizes runtime prompt traces to the prompt event type', () => {
+    const session = xiaobaSessionAdapter.parse([line({
+      entry_type: 'runtime',
+      timestamp: '2026-07-13T07:00:00.000Z',
+      session_id: 'main',
+      session_type: 'chat',
+      level: 'INFO',
+      message: '[会话 main] Prompt trace: system=abc, bundle=def, files=2, version=local',
+    })], 'main.jsonl')
+
+    expect(session.events[0]).toMatchObject({
+      category: 'meta',
+      kind: 'prompt_trace',
+      label: 'Prompt trace',
+      runtimeActivity: { phase: 'prompt_trace' },
+    })
+  })
+
+  it('renders runtime context bookkeeping as compact activities', () => {
+    const session = xiaobaSessionAdapter.parse([line({
+      entry_type: 'runtime',
+      timestamp: '2026-07-13T07:00:00.000Z',
+      session_id: 'main',
+      session_type: 'chat',
+      level: 'INFO',
+      message: '[cc_group:grp_734 Turn 2] tool_result top_tools_before: skill count=1 chars=1257 max=1257',
+    })], 'main.jsonl')
+
+    expect(session.events[0]).toMatchObject({
+      kind: 'runtime_activity',
+      label: 'Context update · Turn 2',
+      preview: 'skill count=1 chars=1257 max=1257',
+    })
+  })
+
+  it('promotes synthetic observation lifecycle records to branch events', () => {
+    const session = xiaobaSessionAdapter.parse([line({
+      entry_type: 'runtime',
+      timestamp: '2026-07-13T07:00:00.000Z',
+      session_id: 'main',
+      session_type: 'chat',
+      level: 'INFO',
+      message: '[main Turn 1] synthetic_observation_lifecycle injected id=memory-1',
+      event: {
+        type: 'synthetic_observation_lifecycle',
+        payload: {
+          branch_id: 'memory-1',
+          branch_type: 'memory',
+          outcome: 'injected',
+          observation_id: 'observation-1',
+        },
+      },
+    })], 'main.jsonl')
+
+    expect(session.events[0]).toMatchObject({
+      category: 'meta',
+      kind: 'branch_lifecycle',
+      label: 'Branch injected · memory',
+    })
+  })
+
+  it('renders branch status lines as branch activity instead of INFO runtime', () => {
+    const session = xiaobaSessionAdapter.parse([line({
+      entry_type: 'runtime',
+      timestamp: '2026-07-13T07:00:00.000Z',
+      session_id: 'main',
+      session_type: 'chat',
+      level: 'INFO',
+      message: '[branch:memory:memory-1 Turn 1] 上下文: 2 条消息',
+    })], 'main.jsonl')
+
+    expect(session.events[0]).toMatchObject({
+      category: 'meta',
+      kind: 'branch_activity',
+      label: 'Branch context · memory',
+      preview: '上下文: 2 条消息',
+      branchActivity: {
+        branchType: 'memory',
+        branchId: 'memory-1',
+        phase: 'context',
+      },
+    })
+    expect(session.conversationItems[0]?.role).toBe('branch_activity')
   })
 
   it('is selected by the registry', () => {
@@ -202,7 +334,6 @@ describe('xiaobaSessionAdapter.parse', () => {
     expect(session.conversationItems.map(item => item.role)).toEqual([
       'user',
       'tool_call',
-      'assistant',
       'tool_result',
       'assistant',
       'user',
@@ -212,9 +343,48 @@ describe('xiaobaSessionAdapter.parse', () => {
       toolCallId: 'call-1',
       toolInput: { command: 'ls' },
     })
-    expect(session.conversationItems[3]?.block).toMatchObject({
+    expect(session.conversationItems[2]?.block).toMatchObject({
       toolCallId: 'call-1',
       status: 'completed',
+    })
+  })
+
+  it('classifies assistant tool calls as tool events and selects the call item', () => {
+    const session = xiaobaSessionAdapter.parse([
+      line({
+        role: 'assistant',
+        content: 'I will inspect the repository.',
+        tool_calls: [{
+          id: 'call-1',
+          type: 'function',
+          function: { name: 'grep', arguments: '{"pattern":"tool_calls"}' },
+        }],
+        __episodeId: 'episode:1',
+      }),
+      line({
+        role: 'tool',
+        name: 'grep',
+        content: 'src/adapters/xiaoba-session.ts',
+        tool_call_id: 'call-1',
+        __episodeId: 'episode:1',
+      }, 2),
+    ], 'context-tools.jsonl')
+
+    expect(session.events[0]).toMatchObject({
+      category: 'tool',
+      kind: 'tool_call',
+      label: 'tool_use grep',
+    })
+    expect(session.events[0]?.conversationItem?.role).toBe('tool_call')
+    expect(session.events[0]?.conversationItem?.block).toMatchObject({
+      toolName: 'grep',
+      toolCallId: 'call-1',
+      status: 'completed',
+    })
+    expect(session.events[1]).toMatchObject({
+      category: 'tool',
+      kind: 'tool_result',
+      label: 'tool_result grep',
     })
   })
 
@@ -270,14 +440,14 @@ describe('xiaobaSessionAdapter.parse', () => {
 
     expect(session.meta.sessionId).toBe('skill-author-1')
     expect(session.events[0]).toMatchObject({
-      category: 'tool',
-      kind: 'fixture_result',
+      category: 'meta',
+      kind: 'branch_event',
       label: 'skill-author · fixture_result',
-      preview: 'passed',
+      preview: 'Round: 2',
       turnIndex: 2,
     })
     expect(session.conversationItems).toHaveLength(1)
-    expect(session.conversationItems[0]).toMatchObject({ role: 'system' })
+    expect(session.conversationItems[0]).toMatchObject({ role: 'branch_event' })
   })
 
   it('summarizes distillation payloads instead of dumping large arrays', () => {
@@ -294,6 +464,7 @@ describe('xiaobaSessionAdapter.parse', () => {
     })], 'distillation.jsonl')
 
     const text = session.conversationItems[0]?.block?.text
+    expect(session.conversationItems[0]?.role).toBe('branch_event')
     expect(text).toBe([
       'Source: /project/logs/sessions/chat/chat_cli.jsonl',
       'Bytes: 0–214410',

@@ -1,4 +1,8 @@
-import { parseXiaoBaRuntimeToolMessage } from '../core/xiaoba'
+import {
+  parseXiaoBaRuntimeActivity,
+  parseXiaoBaRuntimeToolMessage,
+  xiaobaRuntimeActivityLabel,
+} from '../core/xiaoba'
 import { truncateBlockText, truncatePreview } from '../core/text'
 import type {
   ConversationListItem,
@@ -29,18 +33,30 @@ export function parseXiaoBaPlainLog(text: string, fileName: string): ExplorerSes
 
     const { timestamp, level, scope, message } = match.groups
     const runtimeTool = parseXiaoBaRuntimeToolMessage(message ?? '')
+    const runtimeActivity = runtimeTool
+      ? undefined
+      : parseXiaoBaRuntimeActivity(message ?? '', { defaultScope: scope })
     const event: TimelineEvent = {
       id: `line-${index + 1}`,
       lineIndex: index + 1,
       timestamp: timestamp ? Date.parse(timestamp.replace(' ', 'T')) : undefined,
       timestampLabel: timestamp,
-      category: runtimeTool ? 'tool' : 'system',
-      kind: runtimeTool ? (runtimeTool.phase === 'call' ? 'tool_call' : 'tool_result') : 'runtime',
+      category: runtimeTool
+        ? 'tool'
+        : runtimeActivity?.phase === 'prompt_trace' ? 'meta' : 'system',
+      kind: runtimeTool
+        ? (runtimeTool.phase === 'call' ? 'tool_call' : 'tool_result')
+        : runtimeActivity?.phase === 'prompt_trace'
+          ? 'prompt_trace'
+          : runtimeActivity ? 'runtime_activity' : 'runtime',
       label: runtimeTool
         ? `${runtimeTool.phase === 'call' ? 'tool_use' : 'tool_result'} ${runtimeTool.name}`
-        : [level, scope ?? 'runtime'].filter(Boolean).join(' '),
-      preview: truncatePreview(message ?? ''),
-      turnIndex: runtimeTool?.turn,
+        : runtimeActivity
+          ? xiaobaRuntimeActivityLabel(runtimeActivity)
+          : [level, scope ?? 'runtime'].filter(Boolean).join(' '),
+      preview: runtimeActivity ? truncatePreview(runtimeActivity.text) : truncatePreview(message ?? ''),
+      turnIndex: runtimeTool?.turn ?? runtimeActivity?.turn,
+      runtimeActivity,
       role: scope,
       raw: { timestamp, level, scope, message, raw },
     }
@@ -88,6 +104,18 @@ export function parseXiaoBaPlainLog(text: string, fileName: string): ExplorerSes
         conversationItems.push(item)
         event.conversationItem = item
       }
+    } else if (runtimeActivity) {
+      const item: ConversationListItem = {
+        id: `conv-${index + 1}-runtime-activity`,
+        event,
+        role: 'runtime_activity',
+        block: {
+          type: 'text',
+          text: truncateBlockText(runtimeActivity.text),
+        },
+      }
+      conversationItems.push(item)
+      event.conversationItem = item
     } else {
       const item: ConversationListItem = {
         id: `conv-${index + 1}-runtime`,
