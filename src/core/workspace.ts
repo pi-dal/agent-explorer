@@ -1,5 +1,8 @@
+export const SUPPORTED_LOG_EXTENSIONS = ['jsonl', 'log'] as const
+
 export function isLogCandidate(fileName: string): boolean {
-  return /\.(?:jsonl|log)$/i.test(fileName)
+  const lowerName = fileName.toLowerCase()
+  return SUPPORTED_LOG_EXTENSIONS.some(extension => lowerName.endsWith(`.${extension}`))
 }
 
 export function workspaceNameFromPaths(paths: string[]): string {

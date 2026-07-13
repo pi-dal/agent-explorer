@@ -1,3 +1,5 @@
+import { SUPPORTED_LOG_EXTENSIONS } from '../core/workspace'
+
 export interface WorkspaceFile {
   name: string
   relativePath: string
@@ -37,7 +39,7 @@ export async function openDesktopFile(): Promise<WorkspaceFile | null> {
     multiple: false,
     directory: false,
     title: 'Open agent session log',
-    filters: [{ name: 'Agent session logs', extensions: ['jsonl', 'json', 'log'] }],
+    filters: [{ name: 'Agent session logs', extensions: [...SUPPORTED_LOG_EXTENSIONS] }],
   })
   if (!path) return null
 

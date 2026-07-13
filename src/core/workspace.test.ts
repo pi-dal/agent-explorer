@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { isLogCandidate, workspaceNameFromPaths } from './workspace'
+import { isLogCandidate, SUPPORTED_LOG_EXTENSIONS, workspaceNameFromPaths } from './workspace'
 
 describe('workspace log discovery', () => {
   it('accepts logs regardless of the selected directory depth', () => {
@@ -7,6 +7,8 @@ describe('workspace log discovery', () => {
     expect(isLogCandidate('chat/2026-07-10/chat_cli.jsonl')).toBe(true)
     expect(isLogCandidate('2026-07-10/chat_cli.jsonl')).toBe(true)
     expect(isLogCandidate('09-02-26_cli.log')).toBe(true)
+    expect(isLogCandidate('runtime/agent.json')).toBe(false)
+    expect(SUPPORTED_LOG_EXTENSIONS).toEqual(['jsonl', 'log'])
     expect(isLogCandidate('prompts/system-prompt.md')).toBe(false)
   })
 

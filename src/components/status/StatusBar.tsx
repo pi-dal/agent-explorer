@@ -17,6 +17,7 @@ import {
 } from '../../platform/desktopWorkspaceController'
 import { runDesktopAction } from '../../platform/desktopActions'
 import { DesktopUpdateButton } from './DesktopUpdateButton'
+import { SUPPORTED_LOG_EXTENSIONS } from '../../core/workspace'
 
 const GITHUB_REPOSITORY_URL = 'https://github.com/pi-dal/agent-explorer'
 
@@ -141,7 +142,7 @@ export function StatusBar() {
       <input
         ref={fileInputRef}
         type="file"
-        accept=".jsonl,.json,.log"
+        accept={SUPPORTED_LOG_EXTENSIONS.map(extension => `.${extension}`).join(',')}
         className="hidden"
         onChange={handleFileChange}
       />
