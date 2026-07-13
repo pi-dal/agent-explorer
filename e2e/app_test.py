@@ -102,7 +102,9 @@ def run_e2e(page: Page, url: str) -> None:
     page.goto(url, wait_until="networkidle")
     page.get_by_test_id("open-file-input").set_input_files(str(FIXTURE))
     wait_for_session(page)
-    page.get_by_text("xiaoba-session.sample.jsonl", exact=True).wait_for(state="visible")
+    page.get_by_role("banner").get_by_text(
+        "xiaoba-session.sample.jsonl", exact=True
+    ).wait_for(state="visible")
 
     timeline_tool = page.get_by_role("option").filter(has_text=re.compile(r"read_file")).first
     timeline_tool.wait_for(state="visible")
