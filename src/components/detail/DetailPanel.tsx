@@ -95,7 +95,7 @@ export function DetailPanel() {
           Raw JSON
         </TabButton>
       </div>
-      <div className="min-h-0 flex-1 overflow-auto overscroll-contain p-3">
+      <div data-testid="detail-scroll" className="min-h-0 flex-1 overflow-auto overscroll-contain p-3">
         {tab === 'session' && <SessionMetaPanel session={session} />}
         {tab === 'execution' && hasExecution && selection?.event && (
           <XiaoBaExecutionPanel event={selection.event} />

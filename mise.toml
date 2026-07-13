@@ -1,4 +1,5 @@
 [tools]
 node = "24"
 pnpm = "latest"
+uv = "latest"
 rust = "stable"

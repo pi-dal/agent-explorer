@@ -174,7 +174,11 @@ export function ConversationPanel() {
         {items.length !== allItems.length ? ` / ${allItems.length}` : ''} items ·{' '}
         {session.meta.turnCount} turns
       </div>
-      <div ref={parentRef} className="min-h-0 flex-1 overflow-auto overscroll-contain py-3">
+      <div
+        ref={parentRef}
+        data-testid="conversation-scroll"
+        className="min-h-0 flex-1 overflow-auto overscroll-contain py-3"
+      >
         <div
           style={{ height: virtualizer.getTotalSize(), position: 'relative', width: '100%' }}
         >

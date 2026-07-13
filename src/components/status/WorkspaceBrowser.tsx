@@ -206,7 +206,11 @@ export function WorkspaceBrowser({
             <span className="truncate">{workspaceName}</span>
             <span className="ml-auto font-mono font-normal">{sessions.length} readable logs</span>
           </div>
-          <div className="max-h-[min(32rem,70vh)] overflow-auto py-1" role="tree">
+          <div
+            data-testid="workspace-browser-tree"
+            className="max-h-[min(32rem,70vh)] overflow-auto py-1"
+            role="tree"
+          >
             {[...tree.directories.values()]
               .sort((a, b) => a.name.localeCompare(b.name))
               .map(node => (

@@ -43,6 +43,10 @@ jobs:
           EXPECTED_VERSION="$tag" pnpm version:check
       - run: pnpm lint
       - run: pnpm test
+      - run: pnpm build
+      - name: Install Playwright Chromium
+        run: uv run --with playwright --no-project python -m playwright install --with-deps chromium
+      - run: pnpm test:smoke
       - name: Validate updater signing secret
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}

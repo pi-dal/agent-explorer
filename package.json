@@ -18,6 +18,9 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "test": "vitest run",
+    "test:e2e": "uv run --with playwright --no-project python e2e/app_test.py --suite e2e",
+    "test:e2e:install": "uv run --with playwright --no-project python -m playwright install chromium",
+    "test:smoke": "uv run --with playwright --no-project python e2e/app_test.py --suite smoke",
     "preview": "vite preview"
   },
   "devDependencies": {

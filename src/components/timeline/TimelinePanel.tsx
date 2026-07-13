@@ -141,6 +141,7 @@ export function TimelinePanel() {
       )}
       <div
         ref={parentRef}
+        data-testid="timeline-scroll"
         tabIndex={0}
         role="listbox"
         aria-label="Timeline events"

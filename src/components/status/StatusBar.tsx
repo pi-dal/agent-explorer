@@ -142,6 +142,7 @@ export function StatusBar() {
       <input
         ref={fileInputRef}
         type="file"
+        data-testid="open-file-input"
         accept={SUPPORTED_LOG_EXTENSIONS.map(extension => `.${extension}`).join(',')}
         className="hidden"
         onChange={handleFileChange}
@@ -149,6 +150,7 @@ export function StatusBar() {
       <input
         ref={folderInputRef}
         type="file"
+        data-testid="open-folder-input"
         className="hidden"
         onChange={handleFolderChange}
         {...({ webkitdirectory: '', directory: '' } as Record<string, string>)}

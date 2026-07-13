@@ -32,7 +32,10 @@ export function XiaoBaTimelineFilter({
   const counts = countXiaoBaTimelineScopes(events)
 
   return (
-    <div className={`flex min-w-0 max-w-full gap-1 overflow-x-auto overscroll-contain px-2 py-1.5 ${sectionDivider}`}>
+    <div
+      data-testid="xiaoba-filter-scroll"
+      className={`flex min-w-0 max-w-full gap-1 overflow-x-auto overscroll-contain px-2 py-1.5 ${sectionDivider}`}
+    >
       {OPTIONS.map((option) => {
         const Icon = option.icon
         const active = value === option.value
