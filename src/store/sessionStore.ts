@@ -1,7 +1,9 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { detectAndParse } from '../core/registry'
+import { composeTraceGraph } from '../core/trace'
 import type { ExplorerSession, TimelineEvent, ConversationListItem, Selection, WorkspaceProgress, WorkspaceStats } from '../core/types'
+import type { TraceGraph } from '../core/types'
 import { useSettingsStore } from './settingsStore'
 import { isLogCandidate, workspaceNameFromPaths } from '../core/workspace'
 import type { WorkspaceFile } from '../platform/workspaceSource'
@@ -11,6 +13,7 @@ type Theme = 'light' | 'dark' | 'system'
 interface SessionState {
   session: ExplorerSession | null
   sessions: ExplorerSession[]
+  traceGraph: TraceGraph | null
   workspaceName: string | null
   workspaceStats: WorkspaceStats | null
   workspaceProgress: WorkspaceProgress | null
@@ -70,6 +73,7 @@ export const useSessionStore = create<SessionState>()(
     (set, get) => ({
       session: null,
       sessions: [],
+      traceGraph: null,
       workspaceName: null,
       workspaceStats: null,
       workspaceProgress: null,
@@ -94,6 +98,7 @@ export const useSessionStore = create<SessionState>()(
           set({
             session,
             sessions: [session],
+            traceGraph: null,
             workspaceName: null,
             workspaceStats: null,
             workspaceProgress: null,
@@ -113,6 +118,7 @@ export const useSessionStore = create<SessionState>()(
           set({
             session: null,
             sessions: [],
+            traceGraph: null,
             workspaceName: null,
             workspaceStats: null,
             workspaceProgress: null,
@@ -183,6 +189,8 @@ export const useSessionStore = create<SessionState>()(
             ))
             .map(value => value.session)
 
+          const traceGraph = composeTraceGraph(parsed)
+
           if (parsed.length === 0) {
             throw new Error(
               sessionFiles.length === 0
@@ -195,6 +203,7 @@ export const useSessionStore = create<SessionState>()(
           set({
             session: nextSession,
             sessions: parsed,
+            traceGraph,
             workspaceName,
             workspaceStats: {
               candidateCount: sessionFiles.length,
@@ -210,6 +219,7 @@ export const useSessionStore = create<SessionState>()(
           set({
             session: null,
             sessions: [],
+            traceGraph: null,
             workspaceName: null,
             workspaceStats: null,
             workspaceProgress: null,
@@ -278,6 +288,7 @@ export const useSessionStore = create<SessionState>()(
       clearSession: () => set({
         session: null,
         sessions: [],
+        traceGraph: null,
         workspaceName: null,
         workspaceStats: null,
         workspaceProgress: null,
