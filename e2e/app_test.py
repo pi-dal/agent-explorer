@@ -106,9 +106,9 @@ def run_e2e(page: Page, url: str) -> None:
         "xiaoba-session.sample.jsonl", exact=True
     ).wait_for(state="visible")
 
-    timeline_tool = page.get_by_role("option").filter(has_text=re.compile(r"read_file")).first
-    timeline_tool.wait_for(state="visible")
-    timeline_tool.click()
+    timeline_turn = page.locator('[data-event-kind="turn"]').first
+    timeline_turn.wait_for(state="visible")
+    timeline_turn.click()
 
     tool_call = page.get_by_role("button", name=re.compile(r"Call · read_file")).first
     tool_call.wait_for(state="visible")

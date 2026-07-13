@@ -49,6 +49,8 @@ export function TimelineItem({
       type="button"
       role="option"
       id={`timeline-event-${event.id}`}
+      data-event-kind={event.kind}
+      data-event-label={event.label}
       aria-selected={selected}
       onClick={() => { onSelect(event) }}
       onKeyDown={onKeyDown}
