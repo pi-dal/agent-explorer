@@ -27,23 +27,9 @@ CI builds are unsigned and are retained as workflow artifacts. Tag builds are at
 
 ## macOS distribution
 
-macOS release builds use an Apple Developer ID Application certificate and App Store Connect notarization. This is required for a DMG downloaded from GitHub or installed through Homebrew to pass Gatekeeper without asking each user to manually whitelist the app. Never commit certificates, private keys, or Apple credentials.
+macOS release builds use an explicit ad-hoc signature (`signingIdentity: "-"`). This avoids Apple Silicon builds being treated as damaged while keeping the release usable without Apple Developer credentials. Gatekeeper may still require the user to open the app once and choose **Open Anyway** in Privacy & Security; ad-hoc signing is not notarization.
 
-The `Desktop Release` workflow fails during preparation if any of these GitHub Actions secrets is missing:
-
-| Secret | Purpose |
-|--------|---------|
-| `APPLE_CERTIFICATE` | Base64-encoded Developer ID Application `.p12` certificate |
-| `APPLE_CERTIFICATE_PASSWORD` | Password for the exported `.p12` file |
-| `APPLE_SIGNING_IDENTITY` | Full keychain identity, for example `Developer ID Application: Example, Inc. (TEAMID)` |
-| `KEYCHAIN_PASSWORD` | Temporary CI keychain password |
-| `APPLE_API_ISSUER` | App Store Connect API issuer ID |
-| `APPLE_API_KEY` | App Store Connect API key ID |
-| `APPLE_API_KEY_CONTENT` | Contents of the App Store Connect `.p8` private key |
-
-Create the certificate from an Apple Developer account, export it as a password-protected `.p12`, and encode it with `openssl base64 -A`. Create an App Store Connect API key with Developer access and store the complete `.p8` file contents as `APPLE_API_KEY_CONTENT`. See the [Tauri macOS signing guide](https://v2.tauri.app/distribute/sign/macos/) for the Apple account and certificate setup.
-
-The released macOS app can be checked with `codesign --display --verbose=4` and `spctl --assess --type execute --verbose=4`; a valid release should show a Developer ID identity and pass Gatekeeper assessment.
+The released macOS app can be checked with `codesign --display --verbose=4` and `spctl --assess --type execute --verbose=4`. A valid ad-hoc release should show `Signature=adhoc` with sealed resources rather than only a linker-signed executable.
 
 The repository also contains a Homebrew Cask for the Apple Silicon build. Because this repository is not named with Homebrew's conventional `homebrew-` prefix, tap it with its explicit Git remote:
 
