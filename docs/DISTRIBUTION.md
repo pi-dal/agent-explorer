@@ -29,6 +29,15 @@ CI builds are unsigned and are retained as workflow artifacts. Tag builds are at
 
 macOS releases are intentionally unsigned and unnotarized, so no Apple credentials are required. Gatekeeper may require users to explicitly approve the app before opening it. Add Developer ID signing and notarization later if trusted macOS distribution becomes necessary; never commit certificate files or Apple credentials.
 
+The repository also contains a Homebrew Cask for the Apple Silicon build. Because this repository is not named with Homebrew's conventional `homebrew-` prefix, tap it with its explicit Git remote:
+
+```sh
+brew tap --custom-remote pi-dal/agent-explorer https://github.com/pi-dal/agent-explorer.git
+brew install --cask agent-explorer
+```
+
+The Cask lives at `Casks/agent-explorer.rb`. When publishing a new release, update its version, macOS ARM64 DMG URL, and SHA-256 digest from the GitHub Release before tagging.
+
 ## Updater signing
 
 Every in-app update is cryptographically signed. Signature verification cannot be disabled.

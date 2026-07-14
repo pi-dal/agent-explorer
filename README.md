@@ -74,6 +74,13 @@ pnpm lint           # run oxlint
 
 Desktop installers are built for macOS, Windows, and Linux in GitHub Actions. See [Desktop Distribution](docs/DISTRIBUTION.md) for artifact formats, release tags, and signing configuration.
 
+On Apple Silicon macOS, install the latest desktop release with Homebrew:
+
+```bash
+brew tap --custom-remote pi-dal/agent-explorer https://github.com/pi-dal/agent-explorer.git
+brew install --cask agent-explorer
+```
+
 The desktop app performs a silent update check shortly after startup. It never downloads an update automatically: use the status-bar update control or **Check for Updates** in the application menu, then explicitly choose to install and restart.
 
 ## Supported file formats
