@@ -1,6 +1,6 @@
 [package]
 name = "agent-explorer"
-version = "0.2.1"
+version = "0.2.2"
 description = "A local desktop explorer for agent session logs"
 authors = ["pi-dal"]
 license = "MIT"
