@@ -1,6 +1,6 @@
 cask "agent-explorer" do
-  version "0.2.1"
-  sha256 "baaa089eaa7dd83eae53b7963af3ead88f3aaac75f37d684bfd93b0df898427f"
+  version "0.2.2"
+  sha256 "ad7397f13694fca6790e55b4569316fe802bb14120572dd97915afb92782edef"
 
   url "https://github.com/pi-dal/agent-explorer/releases/download/v#{version}/Agent.Explorer_#{version}_aarch64.dmg"
   name "Agent Explorer"
